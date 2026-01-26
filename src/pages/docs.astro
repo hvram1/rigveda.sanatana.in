@@ -1,0 +1,264 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+
+const base = import.meta.env.BASE_URL;
+---
+
+<BaseLayout title="Documentation">
+  <div class="docs-container">
+    <h1>ऋग्वेद - Feature Documentation</h1>
+    <p class="subtitle">A comprehensive guide to navigating and using this digital Rigveda platform</p>
+    
+    <div class="doc-card">
+      <h2>📖 Complete Feature Guide</h2>
+      <p>Explore all the features of this Rigveda website including navigation, search, audio streaming, and mobile accessibility.</p>
+      <a href={`${base}docs/features.md`} class="doc-link" target="_blank">View Documentation (Markdown)</a>
+    </div>
+
+    <div class="toc">
+      <h2>Quick Reference</h2>
+      
+      <div class="toc-grid">
+        <div class="toc-section">
+          <h3>Navigation</h3>
+          <ul>
+            <li><strong>Homepage:</strong> Central hub with mandala grid</li>
+            <li><strong>Sidebar:</strong> Persistent navigation on all pages</li>
+            <li><strong>Quick Jump:</strong> Enter "1.45" or "1.45.3" to navigate</li>
+          </ul>
+        </div>
+
+        <div class="toc-section">
+          <h3>Content</h3>
+          <ul>
+            <li><strong>10 Mandalas</strong> with 1,028 Suktas</li>
+            <li><strong>10,552 Verses</strong> with Padapatha</li>
+            <li><strong>Sayana Bhashya</strong> commentary</li>
+            <li><strong>Audio recitation</strong> for each verse</li>
+          </ul>
+        </div>
+
+        <div class="toc-section">
+          <h3>Search</h3>
+          <ul>
+            <li><strong>Phonetic matching:</strong> द/ध, स/श/ष, इ/ई</li>
+            <li><strong>10,552 verses</strong> indexed</li>
+            <li><strong>Dual highlighting:</strong> Exact vs phonetic</li>
+          </ul>
+        </div>
+
+        <div class="toc-section">
+          <h3>Indices</h3>
+          <ul>
+            <li><strong>ऋषयः:</strong> 485+ Rishis</li>
+            <li><strong>देवताः:</strong> All Devatas</li>
+            <li><strong>छन्दांसि:</strong> Vedic Meters</li>
+            <li><strong>पदानुक्रमणिका:</strong> 29,811 words</li>
+          </ul>
+        </div>
+
+        <div class="toc-section">
+          <h3>Classifications</h3>
+          <ul>
+            <li><strong>Mandala:</strong> Traditional 10-book division</li>
+            <li><strong>Ashtaka:</strong> 8 × 8 = 64 sections</li>
+            <li><strong>Samanapada:</strong> 1,539 special mantras</li>
+          </ul>
+        </div>
+
+        <div class="toc-section">
+          <h3>Auxiliary Texts</h3>
+          <ul>
+            <li><strong>Brihaddevata:</strong> 8 adhyayas, 1,236 verses</li>
+            <li><strong>Aitareya Brahmana:</strong> 10 adhyayas, 636 passages</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <div class="screenshots-preview">
+      <h2>Screenshots</h2>
+      <div class="screenshot-grid">
+        <figure>
+          <img src={`${base}docs/screenshots/01-homepage.png`} alt="Homepage" loading="lazy" />
+          <figcaption>Homepage with Mandala Grid</figcaption>
+        </figure>
+        <figure>
+          <img src={`${base}docs/screenshots/03-rik-detail.png`} alt="Verse Detail" loading="lazy" />
+          <figcaption>Verse Detail with Audio</figcaption>
+        </figure>
+        <figure>
+          <img src={`${base}docs/screenshots/04-search-results.png`} alt="Search" loading="lazy" />
+          <figcaption>Phonetic Search Results</figcaption>
+        </figure>
+        <figure>
+          <img src={`${base}docs/screenshots/11-mobile-homepage.png`} alt="Mobile View" loading="lazy" />
+          <figcaption>Mobile Responsive Design</figcaption>
+        </figure>
+      </div>
+    </div>
+  </div>
+</BaseLayout>
+
+<style>
+  .docs-container {
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 2rem;
+  }
+
+  h1 {
+    font-family: 'AdiShilaVedic', serif;
+    font-size: 2.5rem;
+    color: var(--color-maroon);
+    margin-bottom: 0.5rem;
+    text-align: center;
+  }
+
+  .subtitle {
+    text-align: center;
+    color: var(--color-text-light);
+    margin-bottom: 2rem;
+  }
+
+  .doc-card {
+    background: white;
+    padding: 2rem;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    margin-bottom: 2rem;
+    border-left: 4px solid var(--color-golden);
+  }
+
+  .doc-card h2 {
+    font-family: 'AdiShilaVedic', serif;
+    color: var(--color-maroon);
+    margin-bottom: 0.5rem;
+  }
+
+  .doc-link {
+    display: inline-block;
+    margin-top: 1rem;
+    padding: 0.75rem 1.5rem;
+    background: var(--color-maroon);
+    color: white;
+    border-radius: 6px;
+    text-decoration: none;
+    transition: background 0.2s;
+  }
+
+  .doc-link:hover {
+    background: var(--color-primary);
+  }
+
+  .toc {
+    background: white;
+    padding: 2rem;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    margin-bottom: 2rem;
+  }
+
+  .toc h2 {
+    font-family: 'AdiShilaVedic', serif;
+    color: var(--color-maroon);
+    margin-bottom: 1.5rem;
+    text-align: center;
+  }
+
+  .toc-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 1.5rem;
+  }
+
+  .toc-section {
+    background: #fafafa;
+    padding: 1rem;
+    border-radius: 8px;
+  }
+
+  .toc-section h3 {
+    font-family: 'AdiShilaVedic', serif;
+    color: var(--color-golden);
+    font-size: 1.1rem;
+    margin-bottom: 0.75rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 2px solid var(--color-golden);
+  }
+
+  .toc-section ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+
+  .toc-section li {
+    padding: 0.25rem 0;
+    font-size: 0.9rem;
+    color: var(--color-text);
+  }
+
+  .toc-section strong {
+    color: var(--color-maroon);
+  }
+
+  .screenshots-preview {
+    background: white;
+    padding: 2rem;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  }
+
+  .screenshots-preview h2 {
+    font-family: 'AdiShilaVedic', serif;
+    color: var(--color-maroon);
+    margin-bottom: 1.5rem;
+    text-align: center;
+  }
+
+  .screenshot-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 1.5rem;
+  }
+
+  .screenshot-grid figure {
+    margin: 0;
+  }
+
+  .screenshot-grid img {
+    width: 100%;
+    height: 200px;
+    object-fit: cover;
+    object-position: top;
+    border-radius: 8px;
+    border: 1px solid #ddd;
+    transition: transform 0.2s;
+  }
+
+  .screenshot-grid img:hover {
+    transform: scale(1.02);
+  }
+
+  .screenshot-grid figcaption {
+    text-align: center;
+    padding: 0.5rem;
+    font-size: 0.85rem;
+    color: var(--color-text-light);
+  }
+
+  @media (max-width: 768px) {
+    .docs-container {
+      padding: 1rem;
+    }
+
+    h1 {
+      font-size: 1.8rem;
+    }
+
+    .doc-card, .toc, .screenshots-preview {
+      padding: 1rem;
+    }
+  }
+</style>

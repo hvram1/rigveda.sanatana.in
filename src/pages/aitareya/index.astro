@@ -1,0 +1,209 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import aitareya from '../../data/aitareya-brahmana.json';
+
+const { title, titleRoman, description, totalAdhyayas, totalKhandas, totalPassages, adhyayas } = aitareya;
+
+const ADHYAYA_NAMES: Record<number, string> = {
+  1: 'प्रथमोऽध्यायः',
+  2: 'द्वितीयोऽध्यायः',
+  3: 'तृतीयोऽध्यायः',
+  4: 'चतुर्थोऽध्यायः',
+  5: 'पञ्चमोऽध्यायः',
+  6: 'षष्ठोऽध्यायः',
+  7: 'सप्तमोऽध्यायः',
+  8: 'अष्टमोऽध्यायः',
+  9: 'नवमोऽध्यायः',
+  10: 'दशमोऽध्यायः'
+};
+---
+
+<BaseLayout title="ऐतरेय ब्राह्मणम्">
+  <div class="ab-container">
+    <header class="page-header">
+      <h1>{title}</h1>
+      <p class="subtitle">{titleRoman}</p>
+      <p class="description">
+        {description}. The Aitareya Brahmana belongs to the Shakala shakha of the Rigveda and 
+        provides detailed explanations of Vedic rituals, particularly the Soma sacrifice.
+      </p>
+      <p class="stats">{totalAdhyayas} अध्यायाः, {totalKhandas} खण्डाः, {totalPassages} प्रकरणानि</p>
+    </header>
+
+    <div class="adhyaya-list">
+      {adhyayas.map((adhyaya: any) => (
+        <div class="adhyaya-section">
+          <div class="adhyaya-header">
+            <span class="adhyaya-num">{adhyaya.adhyaya}</span>
+            <h2>{ADHYAYA_NAMES[adhyaya.adhyaya]}</h2>
+            <span class="khanda-count">{adhyaya.khandas.length} खण्डाः</span>
+          </div>
+          <div class="khanda-grid">
+            {adhyaya.khandas.map((khanda: any) => (
+              <a href={`/aitareya/${adhyaya.adhyaya}/${khanda.khanda}`} class="khanda-link">
+                <span class="khanda-num">खण्डः {khanda.khanda}</span>
+                <span class="passage-count">{khanda.passages.length} प्रकरणानि</span>
+              </a>
+            ))}
+          </div>
+        </div>
+      ))}
+    </div>
+
+    <div class="back-link">
+      <a href="/">← मुख्यपृष्ठम्</a>
+    </div>
+  </div>
+</BaseLayout>
+
+<style>
+  .ab-container {
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 2rem;
+  }
+
+  .page-header {
+    text-align: center;
+    margin-bottom: 2rem;
+  }
+
+  .page-header h1 {
+    font-family: 'AdiShilaVedic', serif;
+    font-size: 2.5rem;
+    color: var(--color-maroon);
+    margin-bottom: 0.25rem;
+  }
+
+  .subtitle {
+    color: var(--color-text-light);
+    font-size: 1.2rem;
+    margin-bottom: 1rem;
+  }
+
+  .description {
+    max-width: 700px;
+    margin: 0 auto 1rem;
+    color: var(--color-text);
+    line-height: 1.6;
+  }
+
+  .stats {
+    font-family: 'AdiShilaVedic', serif;
+    color: var(--color-maroon);
+    font-size: 1.1rem;
+    background: rgba(128, 0, 0, 0.1);
+    display: inline-block;
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+  }
+
+  .adhyaya-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+  }
+
+  .adhyaya-section {
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    overflow: hidden;
+  }
+
+  .adhyaya-header {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem 1.5rem;
+    background: linear-gradient(135deg, var(--color-maroon) 0%, #a00000 100%);
+    color: white;
+  }
+
+  .adhyaya-num {
+    font-family: 'AdiShilaVedic', serif;
+    font-size: 1.5rem;
+    font-weight: bold;
+    background: rgba(255,255,255,0.2);
+    width: 45px;
+    height: 45px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+  }
+
+  .adhyaya-header h2 {
+    font-family: 'AdiShilaVedic', serif;
+    font-size: 1.2rem;
+    flex: 1;
+  }
+
+  .khanda-count {
+    font-size: 0.9rem;
+    opacity: 0.9;
+  }
+
+  .khanda-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 1px;
+    background: #eee;
+    padding: 1px;
+  }
+
+  .khanda-link {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 0.75rem;
+    background: white;
+    text-decoration: none;
+    transition: all 0.2s;
+  }
+
+  .khanda-link:hover {
+    background: #fff9f0;
+  }
+
+  .khanda-num {
+    font-family: 'AdiShilaVedic', serif;
+    color: var(--color-maroon);
+    font-size: 0.95rem;
+  }
+
+  .passage-count {
+    font-size: 0.8rem;
+    color: var(--color-text-light);
+  }
+
+  .back-link {
+    text-align: center;
+  }
+
+  .back-link a {
+    font-family: 'AdiShilaVedic', serif;
+    color: var(--color-maroon);
+    text-decoration: none;
+    font-size: 1.1rem;
+  }
+
+  @media (max-width: 768px) {
+    .ab-container {
+      padding: 1rem;
+    }
+
+    .page-header h1 {
+      font-size: 2rem;
+    }
+
+    .adhyaya-header {
+      flex-wrap: wrap;
+    }
+
+    .khanda-grid {
+      grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+    }
+  }
+</style>

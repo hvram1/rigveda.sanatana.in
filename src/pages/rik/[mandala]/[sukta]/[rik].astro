@@ -1,0 +1,89 @@
+---
+import VerseLayout from '../../../../layouts/VerseLayout.astro';
+import VerseCard from '../../../../components/VerseCard.astro';
+import AudioPlayer from '../../../../components/AudioPlayer.astro';
+import { loadRik, MANDALA_NAMES, padNumber } from '../../../../lib/utils';
+import { getAudioUrl } from '../../../../lib/config';
+import fs from 'fs';
+import path from 'path';
+
+export function getStaticPaths() {
+  const paths: { params: { mandala: string; sukta: string; rik: string } }[] = [];
+  
+  for (let m = 1; m <= 10; m++) {
+    const mandalaPath = path.join(process.cwd(), 'src/data', padNumber(m));
+    try {
+      const suktas = fs.readdirSync(mandalaPath).filter(d => !d.startsWith('.'));
+      
+      for (const s of suktas) {
+        const suktaPath = path.join(mandalaPath, s);
+        const riks = fs.readdirSync(suktaPath).filter(f => f.endsWith('.json'));
+        
+        for (const r of riks) {
+          const rikNum = r.replace('.json', '');
+          paths.push({ 
+            params: { 
+              mandala: String(m), 
+              sukta: String(parseInt(s, 10)), 
+              rik: String(parseInt(rikNum, 10)) 
+            } 
+          });
+        }
+      }
+    } catch {}
+  }
+  
+  return paths;
+}
+
+const { mandala, sukta, rik: rikParam } = Astro.params;
+const mandalaNum = parseInt(mandala, 10);
+const suktaNum = parseInt(sukta, 10);
+const rikNum = parseInt(rikParam, 10);
+
+const rikData = await loadRik(mandalaNum, suktaNum, rikNum);
+const audioUrl = getAudioUrl(mandalaNum, suktaNum, rikNum);
+---
+
+<VerseLayout 
+  title={`ऋक् ${mandala}.${sukta}.${rikParam}`}
+  currentMandala={mandalaNum}
+  currentSukta={suktaNum}
+  currentRik={rikNum}
+>
+  {rikData ? (
+    <>
+      <VerseCard rik={rikData} showDetails={true} />
+      
+      <AudioPlayer src={audioUrl} />
+
+      <aside class="mt-6 verse-card">
+        <h3 class="font-semibold text-terracotta mb-3">वर्गीकरणम्</h3>
+        <dl class="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+          <div>
+            <dt class="text-gray-500">अष्टकः</dt>
+            <dd class="font-medium">{rikData.classification.ashtaka}</dd>
+          </div>
+          <div>
+            <dt class="text-gray-500">अध्यायः</dt>
+            <dd class="font-medium">{rikData.classification.adhyaya}</dd>
+          </div>
+          <div>
+            <dt class="text-gray-500">वर्गः</dt>
+            <dd class="font-medium">{rikData.classification.varga}</dd>
+          </div>
+          <div>
+            <dt class="text-gray-500">अनुवाकः</dt>
+            <dd class="font-medium">{rikData.classification.anuvaka}</dd>
+          </div>
+        </dl>
+      </aside>
+    </>
+  ) : (
+    <div class="verse-card text-center">
+      <h1 class="text-2xl text-maroon">ऋक् not found</h1>
+      <p class="mt-2">The requested verse could not be located.</p>
+      <a href="/" class="nav-link inline-block mt-4 bg-saffron/20">Return Home</a>
+    </div>
+  )}
+</VerseLayout>

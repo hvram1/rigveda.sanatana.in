@@ -1,0 +1,27 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import MandalaCard from '../../components/MandalaCard.astro';
+import { getMandalaInfo } from '../../lib/utils';
+
+const mandalas = Array.from({ length: 10 }, (_, i) => {
+  const num = i + 1;
+  const info = getMandalaInfo(num);
+  return { number: num, suktaCount: info.suktas.length };
+});
+---
+
+<BaseLayout title="मण्डलानि">
+  <nav class="mb-6 text-sm text-gray-600">
+    <a href="/" class="hover:text-terracotta">मुख्यपृष्ठम्</a>
+    <span class="mx-2">›</span>
+    <span class="text-maroon">मण्डलानि</span>
+  </nav>
+
+  <h1 class="text-3xl font-bold text-maroon mb-8">दश मण्डलानि</h1>
+
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+    {mandalas.map(m => (
+      <MandalaCard number={m.number} suktaCount={m.suktaCount} />
+    ))}
+  </div>
+</BaseLayout>

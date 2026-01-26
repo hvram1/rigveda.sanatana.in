@@ -1,0 +1,248 @@
+---
+import BaseLayout from '../../../layouts/BaseLayout.astro';
+import aitareya from '../../../data/aitareya-brahmana.json';
+
+export function getStaticPaths() {
+  const paths: any[] = [];
+  
+  for (const adhyaya of aitareya.adhyayas) {
+    for (const khanda of adhyaya.khandas) {
+      paths.push({
+        params: { 
+          adhyaya: String(adhyaya.adhyaya), 
+          khanda: String(khanda.khanda) 
+        },
+        props: { 
+          adhyayaData: adhyaya,
+          khandaData: khanda 
+        }
+      });
+    }
+  }
+  
+  return paths;
+}
+
+const { adhyaya, khanda } = Astro.params;
+const { adhyayaData, khandaData } = Astro.props;
+const adhyayaNum = parseInt(adhyaya, 10);
+const khandaNum = parseInt(khanda, 10);
+
+const ADHYAYA_NAMES: Record<number, string> = {
+  1: 'प्रथमोऽध्यायः',
+  2: 'द्वितीयोऽध्यायः',
+  3: 'तृतीयोऽध्यायः',
+  4: 'चतुर्थोऽध्यायः',
+  5: 'पञ्चमोऽध्यायः',
+  6: 'षष्ठोऽध्यायः',
+  7: 'सप्तमोऽध्यायः',
+  8: 'अष्टमोऽध्यायः',
+  9: 'नवमोऽध्यायः',
+  10: 'दशमोऽध्यायः'
+};
+
+// Navigation
+const totalKhandas = adhyayaData.khandas.length;
+const prevKhanda = khandaNum > 1 ? khandaNum - 1 : null;
+const nextKhanda = khandaNum < totalKhandas ? khandaNum + 1 : null;
+const base = import.meta.env.BASE_URL;
+---
+
+<BaseLayout title={`ऐतरेय ब्राह्मणम् - ${ADHYAYA_NAMES[adhyayaNum]} - खण्डः ${khandaNum}`}>
+  <div class="ab-container">
+    <header class="page-header">
+      <div class="breadcrumb">
+        <a href={`${base}aitareya`}>ऐतरेय ब्राह्मणम्</a> → 
+        <span>{ADHYAYA_NAMES[adhyayaNum]}</span>
+      </div>
+      <h1>खण्डः {khandaNum}</h1>
+      <p class="khanda-title">{khandaData.title}</p>
+      <p class="stats">{khandaData.passages.length} प्रकरणानि</p>
+      
+      <nav class="khanda-nav">
+        {prevKhanda && (
+          <a href={`${base}aitareya/${adhyaya}/${prevKhanda}`} class="nav-btn">← खण्डः {prevKhanda}</a>
+        )}
+        <a href={`${base}aitareya`} class="nav-btn">सर्वे अध्यायाः</a>
+        {nextKhanda && (
+          <a href={`${base}aitareya/${adhyaya}/${nextKhanda}`} class="nav-btn">खण्डः {nextKhanda} →</a>
+        )}
+      </nav>
+    </header>
+
+    <div class="passages-list">
+      {khandaData.passages.map((passage: any) => (
+        <div class="passage-card">
+          <div class="brahmana-section">
+            <h3 class="section-label">ब्राह्मणम्</h3>
+            <p class="brahmana-text">{passage.brahmana}</p>
+          </div>
+          <div class="bhashya-section">
+            <h3 class="section-label">सायणभाष्यम्</h3>
+            <p class="bhashya-text">{passage.bhashya}</p>
+          </div>
+        </div>
+      ))}
+    </div>
+
+    <nav class="bottom-nav">
+      {prevKhanda && (
+        <a href={`${base}aitareya/${adhyaya}/${prevKhanda}`} class="nav-btn">← खण्डः {prevKhanda}</a>
+      )}
+      {nextKhanda && (
+        <a href={`${base}aitareya/${adhyaya}/${nextKhanda}`} class="nav-btn">खण्डः {nextKhanda} →</a>
+      )}
+    </nav>
+
+    <div class="back-link">
+      <a href={`${base}aitareya`}>← ऐतरेय ब्राह्मणम्</a>
+    </div>
+  </div>
+</BaseLayout>
+
+<style>
+  .ab-container {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 2rem;
+  }
+
+  .page-header {
+    text-align: center;
+    margin-bottom: 2rem;
+  }
+
+  .breadcrumb {
+    font-size: 0.9rem;
+    margin-bottom: 0.5rem;
+  }
+
+  .breadcrumb a {
+    color: var(--color-maroon);
+    text-decoration: none;
+  }
+
+  .breadcrumb span {
+    color: var(--color-text-light);
+  }
+
+  .page-header h1 {
+    font-family: 'AdiShilaVedic', serif;
+    font-size: 2rem;
+    color: var(--color-maroon);
+    margin-bottom: 0.25rem;
+  }
+
+  .khanda-title {
+    font-family: 'AdiShilaVedic', serif;
+    color: var(--color-golden);
+    font-size: 1.1rem;
+    margin-bottom: 0.5rem;
+  }
+
+  .stats {
+    color: var(--color-text-light);
+    margin-bottom: 1rem;
+  }
+
+  .khanda-nav, .bottom-nav {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+    flex-wrap: wrap;
+  }
+
+  .nav-btn {
+    font-family: 'AdiShilaVedic', serif;
+    color: var(--color-maroon);
+    text-decoration: none;
+    padding: 0.5rem 1rem;
+    border: 1px solid var(--color-golden);
+    border-radius: 4px;
+    transition: all 0.2s;
+    font-size: 0.9rem;
+  }
+
+  .nav-btn:hover {
+    background: var(--color-golden);
+    color: white;
+  }
+
+  .passages-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+  }
+
+  .passage-card {
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    overflow: hidden;
+  }
+
+  .brahmana-section {
+    padding: 1.25rem;
+    border-bottom: 2px solid var(--color-golden);
+  }
+
+  .bhashya-section {
+    padding: 1.25rem;
+    background: #fafafa;
+  }
+
+  .section-label {
+    font-family: 'AdiShilaVedic', serif;
+    font-size: 0.85rem;
+    color: var(--color-maroon);
+    margin-bottom: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  .brahmana-text {
+    font-family: 'AdiShilaVedic', serif;
+    font-size: 1.2rem;
+    color: var(--color-maroon);
+    line-height: 1.9;
+  }
+
+  .bhashya-text {
+    font-family: 'AdiShilaVedic', serif;
+    font-size: 1.05rem;
+    color: var(--color-text);
+    line-height: 1.8;
+  }
+
+  .bottom-nav {
+    margin: 2rem 0;
+  }
+
+  .back-link {
+    text-align: center;
+  }
+
+  .back-link a {
+    font-family: 'AdiShilaVedic', serif;
+    color: var(--color-maroon);
+    text-decoration: none;
+  }
+
+  @media (max-width: 768px) {
+    .ab-container {
+      padding: 1rem;
+    }
+
+    .page-header h1 {
+      font-size: 1.5rem;
+    }
+
+    .brahmana-text {
+      font-size: 1.1rem;
+    }
+
+    .bhashya-text {
+      font-size: 1rem;
+    }
+  }
+</style>

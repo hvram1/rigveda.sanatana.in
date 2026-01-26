@@ -1,0 +1,87 @@
+---
+import AttributeLayout from '../layouts/AttributeLayout.astro';
+import { getSamanapadaByMandala, MANDALA_NAMES } from '../lib/utils';
+
+const byMandala = getSamanapadaByMandala();
+const totalCount = Array.from(byMandala.values()).reduce((sum, arr) => sum + arr.length, 0);
+---
+
+<AttributeLayout title="समानपदमन्त्राः">
+  <header class="mb-6 verse-card">
+    <h1 class="text-2xl font-bold text-maroon mb-2">समानपदमन्त्राः</h1>
+    <p class="text-gray-600 mb-4">{totalCount} मन्त्राः</p>
+    <p class="intro-text">
+      समानपदमन्त्राः ते मन्त्राः येषु प्रथमवाक्ये द्वितीयवाक्ये च समानसङ्ख्यकानि पदानि सन्ति।
+      एतेषु मन्त्रेषु अष्टौ विकृतयः (जटा, माला, शिखा, रेखा, ध्वजा, दण्ड, रथ, घन) पठितुं शक्यन्ते।
+    </p>
+    <p class="intro-text-en">
+      Samanapada mantras are verses where the first and second lines have equal number of padas (words). 
+      All eight vikṛtis (recitation patterns) - Jaṭā, Mālā, Śikhā, Rekhā, Dhvajā, Daṇḍa, Ratha, and Ghana - 
+      can be practiced on these mantras.
+    </p>
+  </header>
+
+  <div class="space-y-6">
+    {Array.from(byMandala.entries()).sort((a, b) => a[0] - b[0]).map(([mandala, verses]) => (
+      <section class="verse-card">
+        <h2 class="text-lg font-semibold text-terracotta mb-4">
+          {MANDALA_NAMES[mandala]}
+          <span class="text-sm font-normal text-gray-500 ml-2">({verses.length} मन्त्राः)</span>
+        </h2>
+        
+        <div class="verse-grid">
+          {verses.map(v => (
+            <a 
+              href={`/rik/${mandala}/${v.sukta}/${v.rik}`}
+              class="verse-link"
+            >
+              <span class="verse-id">{mandala}.{v.sukta}.{v.rik}</span>
+            </a>
+          ))}
+        </div>
+      </section>
+    ))}
+  </div>
+</AttributeLayout>
+
+<style>
+  .intro-text {
+    font-family: 'AdiShilaVedic', serif;
+    color: #555;
+    line-height: 1.8;
+    margin-bottom: 0.5rem;
+  }
+
+  .intro-text-en {
+    font-size: 0.9rem;
+    color: #777;
+    font-style: italic;
+  }
+
+  .verse-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+
+  .verse-link {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.4rem 0.75rem;
+    background: #fff9f0;
+    border: 1px solid #f0e6d6;
+    border-radius: 4px;
+    transition: all 0.15s;
+  }
+
+  .verse-link:hover {
+    background: var(--color-golden);
+    border-color: var(--color-golden);
+    color: white;
+  }
+
+  .verse-id {
+    font-family: 'AdiShilaVedic', serif;
+    font-weight: 500;
+  }
+</style>

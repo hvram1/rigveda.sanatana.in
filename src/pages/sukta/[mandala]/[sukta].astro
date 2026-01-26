@@ -1,0 +1,69 @@
+---
+import VerseLayout from '../../../layouts/VerseLayout.astro';
+import VerseCard from '../../../components/VerseCard.astro';
+import PlaylistPlayer from '../../../components/PlaylistPlayer.astro';
+import { getSuktaRiks, getMandalaInfo, MANDALA_NAMES, padNumber } from '../../../lib/utils';
+import { getAudioUrl } from '../../../lib/config';
+import fs from 'fs';
+import path from 'path';
+
+export function getStaticPaths() {
+  const paths: { params: { mandala: string; sukta: string } }[] = [];
+  
+  for (let m = 1; m <= 10; m++) {
+    const mandalaPath = path.join(process.cwd(), 'src/data', padNumber(m));
+    try {
+      const suktas = fs.readdirSync(mandalaPath)
+        .filter(d => !d.startsWith('.'))
+        .map(d => parseInt(d, 10))
+        .filter(n => !isNaN(n));
+      
+      for (const s of suktas) {
+        paths.push({ params: { mandala: String(m), sukta: String(s) } });
+      }
+    } catch {}
+  }
+  
+  return paths;
+}
+
+const { mandala, sukta } = Astro.params;
+const mandalaNum = parseInt(mandala, 10);
+const suktaNum = parseInt(sukta, 10);
+const riks = await getSuktaRiks(mandalaNum, suktaNum);
+
+// Build playlist tracks
+const tracks = riks.map(rik => ({
+  id: rik.id,
+  label: rik.id,
+  src: getAudioUrl(mandalaNum, suktaNum, parseInt(rik.classification.rik, 10))
+}));
+---
+
+<VerseLayout 
+  title={`सूक्तम् ${mandala}.${sukta}`}
+  currentMandala={mandalaNum}
+  currentSukta={suktaNum}
+>
+  <header class="mb-6 verse-card">
+    <h1 class="text-2xl font-bold text-maroon mb-2">
+      {MANDALA_NAMES[mandalaNum]} - सूक्तम् {sukta}
+    </h1>
+    <p class="text-gray-600">{riks.length} ऋचः</p>
+    {riks[0] && (
+      <div class="mt-3 flex flex-wrap gap-4 text-sm">
+        <span><strong>ऋषिः:</strong> {riks[0].attribute.rishi}</span>
+        <span><strong>देवता:</strong> {riks[0].attribute.devata}</span>
+        <span><strong>छन्दः:</strong> {riks[0].attribute.chandas}</span>
+      </div>
+    )}
+  </header>
+
+  <PlaylistPlayer tracks={tracks} title={`सूक्तम् ${mandala}.${sukta} - सम्पूर्णम्`} />
+
+  <div class="space-y-6">
+    {riks.map((rik) => (
+      <VerseCard rik={rik} showDetails={true} />
+    ))}
+  </div>
+</VerseLayout>

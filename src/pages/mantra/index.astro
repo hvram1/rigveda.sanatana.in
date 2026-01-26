@@ -1,0 +1,243 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import mantraIndex from '../../data/mantra-index.json';
+
+const { totalMantras, letters, byLetter } = mantraIndex;
+
+// Get mantra counts per letter
+const letterStats = letters.map(letter => ({
+  letter,
+  count: byLetter[letter]?.length || 0
+}));
+---
+
+<BaseLayout title="मन्त्रानुक्रमणिका">
+  <div class="mantra-container">
+    <header class="page-header">
+      <h1>मन्त्रानुक्रमणिका</h1>
+      <p class="subtitle">Mantra Index (Mantrānukramaṇikā)</p>
+      <p class="description">
+        All mantras listed alphabetically by their first line.
+        Use this to find a mantra if you know how it begins.
+      </p>
+      <p class="stats">{totalMantras.toLocaleString()} मन्त्राः</p>
+    </header>
+
+    <nav class="letter-nav">
+      {letterStats.map(({ letter, count }) => (
+        <a href={`/mantra/${encodeURIComponent(letter)}`} class="letter-link">
+          <span class="letter">{letter}</span>
+          <span class="count">{count.toLocaleString()}</span>
+        </a>
+      ))}
+    </nav>
+
+    <section class="preview-section">
+      <h2>Sample Mantras</h2>
+      <div class="sample-mantras">
+        {[
+          byLetter['अ']?.[0],
+          byLetter['इ']?.[0],
+          byLetter['उ']?.[0],
+          byLetter['क']?.[0],
+          byLetter['त']?.[0],
+          byLetter['न']?.[0],
+          byLetter['प']?.[0],
+          byLetter['य']?.[0],
+          byLetter['व']?.[0],
+          byLetter['स']?.[0],
+        ].filter(Boolean).map((mantra: any) => {
+          const [m, s, r] = mantra.id.split('.');
+          return (
+            <a href={`/rik/${m}/${s}/${r}`} class="sample-mantra">
+              <span class="mantra-id">{mantra.id}</span>
+              <span class="mantra-line">{mantra.firstLine.substring(0, 60)}...</span>
+            </a>
+          );
+        })}
+      </div>
+    </section>
+
+    <div class="back-link">
+      <a href="/">← मुख्यपृष्ठम्</a>
+    </div>
+  </div>
+</BaseLayout>
+
+<style>
+  .mantra-container {
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 2rem;
+  }
+
+  .page-header {
+    text-align: center;
+    margin-bottom: 2rem;
+  }
+
+  .page-header h1 {
+    font-family: 'AdiShilaVedic', serif;
+    font-size: 2.5rem;
+    color: var(--color-maroon);
+    margin-bottom: 0.5rem;
+  }
+
+  .subtitle {
+    color: var(--color-text-light);
+    font-size: 1.1rem;
+    margin-bottom: 1rem;
+  }
+
+  .description {
+    max-width: 600px;
+    margin: 0 auto 1rem;
+    color: var(--color-text);
+    line-height: 1.6;
+  }
+
+  .stats {
+    font-family: 'AdiShilaVedic', serif;
+    color: var(--color-golden);
+    font-size: 1.2rem;
+  }
+
+  .letter-nav {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 0.5rem;
+    margin-bottom: 2rem;
+    padding: 1.5rem;
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  }
+
+  .letter-link {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 0.75rem 1rem;
+    background: #f8f8f8;
+    border-radius: 8px;
+    text-decoration: none;
+    transition: all 0.2s;
+    min-width: 60px;
+  }
+
+  .letter-link:hover {
+    background: var(--color-maroon);
+    transform: translateY(-2px);
+  }
+
+  .letter-link:hover .letter,
+  .letter-link:hover .count {
+    color: white;
+  }
+
+  .letter {
+    font-family: 'AdiShilaVedic', serif;
+    font-size: 1.5rem;
+    color: var(--color-maroon);
+    font-weight: bold;
+  }
+
+  .count {
+    font-size: 0.75rem;
+    color: var(--color-text-light);
+  }
+
+  .preview-section {
+    background: white;
+    padding: 1.5rem;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    margin-bottom: 2rem;
+  }
+
+  .preview-section h2 {
+    font-family: 'AdiShilaVedic', serif;
+    font-size: 1.3rem;
+    color: var(--color-maroon);
+    margin-bottom: 1rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 2px solid var(--color-golden);
+  }
+
+  .sample-mantras {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .sample-mantra {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 0.75rem 1rem;
+    background: #f9f9f9;
+    border-radius: 6px;
+    text-decoration: none;
+    transition: all 0.2s;
+    border-left: 3px solid transparent;
+  }
+
+  .sample-mantra:hover {
+    background: #fff9f0;
+    border-left-color: var(--color-golden);
+    padding-left: 1.25rem;
+  }
+
+  .mantra-id {
+    font-weight: bold;
+    color: var(--color-golden);
+    min-width: 60px;
+  }
+
+  .mantra-line {
+    font-family: 'AdiShilaVedic', serif;
+    color: var(--color-text);
+    font-size: 1rem;
+  }
+
+  .back-link {
+    text-align: center;
+  }
+
+  .back-link a {
+    font-family: 'AdiShilaVedic', serif;
+    color: var(--color-maroon);
+    text-decoration: none;
+    font-size: 1.1rem;
+  }
+
+  .back-link a:hover {
+    color: var(--color-golden);
+  }
+
+  @media (max-width: 768px) {
+    .mantra-container {
+      padding: 1rem;
+    }
+
+    .page-header h1 {
+      font-size: 1.8rem;
+    }
+
+    .letter-link {
+      padding: 0.5rem 0.75rem;
+      min-width: 50px;
+    }
+
+    .letter {
+      font-size: 1.2rem;
+    }
+
+    .sample-mantra {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 0.25rem;
+    }
+  }
+</style>

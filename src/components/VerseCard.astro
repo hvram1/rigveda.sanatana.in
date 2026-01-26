@@ -1,0 +1,110 @@
+---
+import { parseSvara, isSamanapada, type RikData } from '../lib/utils';
+
+interface Props {
+  rik: RikData;
+  showDetails?: boolean;
+  audioUrl?: string;
+}
+
+const { rik, showDetails = false, audioUrl } = Astro.props;
+
+// Handle both array and string formats for lines
+const getLines = (obj: { lines: string | string[] }) => {
+  return Array.isArray(obj.lines) ? obj.lines : [obj.lines];
+};
+
+const samhitaHtml = getLines(rik.samhitaAux).map(line => parseSvara(line)).join('<br>');
+const padaHtml = getLines(rik.padapaatha).map(line => parseSvara(line)).join('<br>');
+
+const mandala = parseInt(rik.classification.mandala);
+const sukta = parseInt(rik.classification.sukta);
+const rikNum = parseInt(rik.classification.rik);
+const isThisSamanapada = isSamanapada(mandala, sukta, rikNum);
+const base = import.meta.env.BASE_URL;
+---
+
+<article class="verse-card group" id={`rik-${rik.id}`}>
+  <header class="mb-4 flex items-center gap-2">
+    <a 
+      href={`${base}rik/${rik.classification.mandala}/${rik.classification.sukta}/${rik.classification.rik}`}
+      class="text-lg font-semibold text-terracotta hover:text-maroon transition-colors"
+    >
+      {rik.id}
+    </a>
+    {isThisSamanapada && (
+      <a href={`${base}samanapada`} class="samanapada-badge" title="समानपदमन्त्रः">
+        समानपद
+      </a>
+    )}
+  </header>
+
+  <div class="sanskrit-text text-center mb-4 text-gray-800 leading-relaxed" set:html={samhitaHtml} />
+
+  {audioUrl && (
+    <div class="mb-4">
+      <audio controls class="audio-player">
+        <source src={audioUrl} type="audio/mpeg" />
+      </audio>
+    </div>
+  )}
+
+  <details class="collapsible mt-4 border-t pt-4">
+    <summary class="collapsible-header">
+      <span class="collapsible-icon">▶</span>
+      पदपाठः (Word-by-word)
+    </summary>
+    <div class="mt-3 text-base text-gray-700 leading-loose" set:html={padaHtml} />
+  </details>
+
+  <footer class="mt-4 pt-4 border-t border-amber-100 flex flex-wrap gap-4 text-sm">
+    <div>
+      <span class="text-gray-500">ऋषिः:</span>
+      <a href={`${base}rishi/${encodeURIComponent(rik.attribute.rishi)}`} class="ml-1 text-terracotta hover:underline">
+        {rik.attribute.rishi}
+      </a>
+    </div>
+    <div>
+      <span class="text-gray-500">देवता:</span>
+      <a href={`${base}devata/${encodeURIComponent(rik.attribute.devata)}`} class="ml-1 text-terracotta hover:underline">
+        {rik.attribute.devata}
+      </a>
+    </div>
+    <div>
+      <span class="text-gray-500">छन्दः:</span>
+      <a href={`${base}chandas/${encodeURIComponent(rik.attribute.chandas)}`} class="ml-1 text-terracotta hover:underline">
+        {rik.attribute.chandas}
+      </a>
+    </div>
+  </footer>
+
+  {showDetails && rik.sayanaBhashya && (
+    <details class="collapsible mt-4 border-t pt-4">
+      <summary class="collapsible-header">
+        <span class="collapsible-icon">▶</span>
+        सायणभाष्यम् (Sayana Commentary)
+      </summary>
+      <div class="mt-3 prose prose-amber max-w-none text-sm" set:html={rik.sayanaBhashya} />
+    </details>
+  )}
+</article>
+
+<style>
+  .samanapada-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.15rem 0.5rem;
+    background: #fff9f0;
+    border: 1px solid var(--color-golden);
+    border-radius: 3px;
+    font-size: 0.7rem;
+    font-family: 'AdiShilaVedic', serif;
+    color: var(--color-golden);
+    transition: all 0.15s;
+  }
+
+  .samanapada-badge:hover {
+    background: var(--color-golden);
+    color: white;
+  }
+</style>

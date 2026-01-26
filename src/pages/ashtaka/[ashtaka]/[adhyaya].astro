@@ -1,0 +1,206 @@
+---
+import VerseLayout from '../../../layouts/VerseLayout.astro';
+import VerseCard from '../../../components/VerseCard.astro';
+import { getAllRiks } from '../../../lib/utils';
+
+export async function getStaticPaths() {
+  const allRiks = await getAllRiks();
+  
+  // Group by ashtaka/adhyaya
+  const groups = new Map<string, any[]>();
+  
+  for (const rik of allRiks) {
+    const key = `${rik.classification.ashtaka}-${rik.classification.adhyaya}`;
+    if (!groups.has(key)) {
+      groups.set(key, []);
+    }
+    groups.get(key)!.push(rik);
+  }
+  
+  return Array.from(groups.entries()).map(([key, riks]) => {
+    const [ashtaka, adhyaya] = key.split('-');
+    return {
+      params: { ashtaka, adhyaya },
+      props: { riks }
+    };
+  });
+}
+
+const { ashtaka, adhyaya } = Astro.params;
+const { riks } = Astro.props;
+
+const ashtakaNum = parseInt(ashtaka, 10);
+const adhyayaNum = parseInt(adhyaya, 10);
+
+// Sort riks by varga, then by original order
+riks.sort((a: any, b: any) => {
+  const vargaA = parseInt(a.classification.varga, 10);
+  const vargaB = parseInt(b.classification.varga, 10);
+  if (vargaA !== vargaB) return vargaA - vargaB;
+  return a.id.localeCompare(b.id);
+});
+
+// Group by varga
+const vargaGroups = new Map<number, any[]>();
+for (const rik of riks) {
+  const varga = parseInt(rik.classification.varga, 10);
+  if (!vargaGroups.has(varga)) {
+    vargaGroups.set(varga, []);
+  }
+  vargaGroups.get(varga)!.push(rik);
+}
+
+const vargas = Array.from(vargaGroups.entries())
+  .sort((a, b) => a[0] - b[0])
+  .map(([vargaNum, vargaRiks]) => ({ number: vargaNum, riks: vargaRiks }));
+
+const ASHTAKA_NAMES: Record<number, string> = {
+  1: 'प्रथमोऽष्टकः',
+  2: 'द्वितीयोऽष्टकः',
+  3: 'तृतीयोऽष्टकः',
+  4: 'चतुर्थोऽष्टकः',
+  5: 'पञ्चमोऽष्टकः',
+  6: 'षष्ठोऽष्टकः',
+  7: 'सप्तमोऽष्टकः',
+  8: 'अष्टमोऽष्टकः'
+};
+
+const ADHYAYA_NAMES: Record<number, string> = {
+  1: 'प्रथमोऽध्यायः',
+  2: 'द्वितीयोऽध्यायः',
+  3: 'तृतीयोऽध्यायः',
+  4: 'चतुर्थोऽध्यायः',
+  5: 'पञ्चमोऽध्यायः',
+  6: 'षष्ठोऽध्यायः',
+  7: 'सप्तमोऽध्यायः',
+  8: 'अष्टमोऽध्यायः'
+};
+
+const base = import.meta.env.BASE_URL;
+---
+
+<VerseLayout title={`अष्टकः ${ashtaka} - अध्यायः ${adhyaya}`}>
+  <header class="page-header">
+    <div class="breadcrumb">
+      <a href={`${base}ashtaka`}>अष्टकवर्गीकरणम्</a> →
+    </div>
+    <h1>{ASHTAKA_NAMES[ashtakaNum]} - {ADHYAYA_NAMES[adhyayaNum]}</h1>
+    <p class="stats">{riks.length} ऋचः in {vargas.length} वर्गाः</p>
+    
+    <div class="nav-links">
+      {adhyayaNum > 1 && (
+        <a href={`${base}ashtaka/${ashtaka}/${adhyayaNum - 1}`} class="nav-btn">← पूर्वः अध्यायः</a>
+      )}
+      {adhyayaNum === 1 && ashtakaNum > 1 && (
+        <a href={`${base}ashtaka/${ashtakaNum - 1}/8`} class="nav-btn">← पूर्वः अष्टकः</a>
+      )}
+      {adhyayaNum < 8 && (
+        <a href={`${base}ashtaka/${ashtaka}/${adhyayaNum + 1}`} class="nav-btn">अग्रिमः अध्यायः →</a>
+      )}
+      {adhyayaNum === 8 && ashtakaNum < 8 && (
+        <a href={`${base}ashtaka/${ashtakaNum + 1}/1`} class="nav-btn">अग्रिमः अष्टकः →</a>
+      )}
+    </div>
+  </header>
+
+  <div class="varga-list">
+    {vargas.map(varga => (
+      <section class="varga-section">
+        <h2 class="varga-title">वर्गः {varga.number}</h2>
+        <div class="verse-list">
+          {varga.riks.map((rik: any) => (
+            <VerseCard rik={rik} showDetails={false} />
+          ))}
+        </div>
+      </section>
+    ))}
+  </div>
+</VerseLayout>
+
+<style>
+  .page-header {
+    background: white;
+    padding: 1.5rem;
+    border-radius: 8px;
+    margin-bottom: 1.5rem;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  }
+
+  .breadcrumb {
+    font-size: 0.9rem;
+    margin-bottom: 0.5rem;
+  }
+
+  .breadcrumb a {
+    color: var(--color-maroon);
+    text-decoration: none;
+  }
+
+  .breadcrumb a:hover {
+    color: var(--color-golden);
+  }
+
+  .page-header h1 {
+    font-family: 'AdiShilaVedic', serif;
+    font-size: 1.8rem;
+    color: var(--color-maroon);
+    margin-bottom: 0.5rem;
+  }
+
+  .stats {
+    font-family: 'AdiShilaVedic', serif;
+    color: var(--color-text-light);
+    margin-bottom: 1rem;
+  }
+
+  .nav-links {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+  }
+
+  .nav-btn {
+    font-family: 'AdiShilaVedic', serif;
+    color: var(--color-maroon);
+    text-decoration: none;
+    padding: 0.5rem 1rem;
+    border: 1px solid var(--color-golden);
+    border-radius: 4px;
+    transition: all 0.2s;
+  }
+
+  .nav-btn:hover {
+    background: var(--color-golden);
+    color: white;
+  }
+
+  .varga-section {
+    margin-bottom: 2rem;
+  }
+
+  .varga-title {
+    font-family: 'AdiShilaVedic', serif;
+    font-size: 1.2rem;
+    color: var(--color-golden);
+    padding: 0.5rem 1rem;
+    background: rgba(229, 174, 71, 0.1);
+    border-left: 4px solid var(--color-golden);
+    margin-bottom: 1rem;
+  }
+
+  .verse-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  @media (max-width: 768px) {
+    .page-header h1 {
+      font-size: 1.4rem;
+    }
+
+    .nav-links {
+      flex-direction: column;
+    }
+  }
+</style>

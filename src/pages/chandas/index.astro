@@ -1,0 +1,130 @@
+---
+import AttributeLayout from '../../layouts/AttributeLayout.astro';
+import { getAttributeIndex } from '../../lib/utils';
+
+const chandasList = getAttributeIndex('chandas');
+const totalVerses = chandasList.reduce((sum, c) => sum + c.count, 0);
+
+// Sort by verse count (most used first)
+const sortedByCount = [...chandasList].sort((a, b) => b.count - a.count);
+---
+
+<AttributeLayout title="छन्दांसि">
+  <header class="mb-6 verse-card">
+    <h1 class="text-2xl font-bold text-maroon mb-2">छन्दांसि</h1>
+    <p class="text-gray-600">{chandasList.length} छन्दांसि, {totalVerses} ऋचः</p>
+  </header>
+
+  <section class="verse-card">
+    <div class="chandas-grid">
+      {sortedByCount.map((chandas, i) => (
+        <a 
+          href={`/chandas/${encodeURIComponent(chandas.name)}`}
+          class="chandas-item"
+        >
+          <span class="chandas-rank">{i + 1}</span>
+          <div class="chandas-info">
+            <span class="chandas-name">{chandas.name}</span>
+            <span class="chandas-count">{chandas.count} ऋचः</span>
+          </div>
+          <div class="chandas-bar">
+            <div class="chandas-bar-fill" style={`width: ${(chandas.count / sortedByCount[0].count) * 100}%`}></div>
+          </div>
+        </a>
+      ))}
+    </div>
+  </section>
+</AttributeLayout>
+
+<style>
+  .chandas-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .chandas-item {
+    display: grid;
+    grid-template-columns: 36px 1fr 120px;
+    align-items: center;
+    gap: 1rem;
+    padding: 0.75rem 1rem;
+    background: #f9f9f9;
+    border-radius: 6px;
+    transition: all 0.15s;
+  }
+
+  .chandas-item:hover {
+    background: var(--color-golden);
+    color: white;
+  }
+
+  .chandas-rank {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    background: var(--color-maroon);
+    color: white;
+    border-radius: 50%;
+    font-size: 0.85rem;
+    font-weight: 600;
+  }
+
+  .chandas-item:hover .chandas-rank {
+    background: rgba(255,255,255,0.3);
+  }
+
+  .chandas-info {
+    display: flex;
+    flex-direction: column;
+    gap: 0.1rem;
+  }
+
+  .chandas-name {
+    font-family: 'AdiShilaVedic', serif;
+    font-size: 1.1rem;
+    font-weight: 500;
+  }
+
+  .chandas-count {
+    font-size: 0.8rem;
+    color: #888;
+  }
+
+  .chandas-item:hover .chandas-count {
+    color: rgba(255,255,255,0.85);
+  }
+
+  .chandas-bar {
+    height: 8px;
+    background: rgba(0,0,0,0.08);
+    border-radius: 4px;
+    overflow: hidden;
+  }
+
+  .chandas-bar-fill {
+    height: 100%;
+    background: var(--color-golden);
+    border-radius: 4px;
+    transition: width 0.3s;
+  }
+
+  .chandas-item:hover .chandas-bar {
+    background: rgba(255,255,255,0.3);
+  }
+
+  .chandas-item:hover .chandas-bar-fill {
+    background: white;
+  }
+
+  @media (max-width: 600px) {
+    .chandas-item {
+      grid-template-columns: 32px 1fr;
+    }
+    .chandas-bar {
+      display: none;
+    }
+  }
+</style>

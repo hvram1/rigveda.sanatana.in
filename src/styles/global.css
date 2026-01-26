@@ -1,0 +1,592 @@
+/* Note: Font-face declarations are in the layouts to support base URL */
+
+@import url('https://fonts.googleapis.com/css2?family=Raleway:wght@300;400;500;600;700&display=swap');
+
+:root {
+  /* Original site colors */
+  --color-primary: #ea5644;
+  --color-maroon: #800000;
+  --color-golden: #e5ae47;
+  --color-blue: #3F51B5;
+  --color-indigo: #01579B;
+  --color-text: #555;
+  --color-text-light: #666;
+  --color-bg: #f4f4f4;
+  --color-white: #fff;
+  --color-border: #ccc;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html, body {
+  min-height: 100%;
+  height: 100%;
+}
+
+body {
+  font-family: 'AdiShilaVedic', 'Open Sans', Helvetica, Arial, sans-serif;
+  font-size: 15px;
+  color: var(--color-text);
+  background-color: var(--color-bg);
+  line-height: 1.6;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+  transition: 0.2s ease-in-out all;
+}
+
+a:hover {
+  color: var(--color-primary);
+}
+
+/* Sanskrit text styling - matching original .shloka */
+.sanskrit-text {
+  font-family: 'AdiShilaVedic', serif;
+  font-size: 21px;
+  line-height: 2;
+  color: var(--color-blue);
+  text-align: center;
+}
+
+/* Svara marks are now rendered as Unicode characters (॑ ॒ ᳚) - no special styling needed */
+
+/* Card styling - like original content boxes */
+.verse-card {
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 4px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  padding: 30px;
+  border: 1px solid rgba(0, 0, 0, 0.05);
+  margin-bottom: 20px;
+}
+
+/* Navigation */
+.nav-link {
+  padding: 10px 20px;
+  font-family: 'AdiShilaVedic', sans-serif;
+  font-size: 16px;
+  text-transform: uppercase;
+  color: #454545;
+  transition: 0.2s ease-in-out all;
+}
+
+.nav-link:hover {
+  color: var(--color-primary);
+  background: rgba(0, 0, 0, 0.02);
+}
+
+.audio-player {
+  width: 100%;
+  height: 40px;
+  border-radius: 4px;
+}
+
+/* Header - matching original #head */
+.site-header {
+  background: var(--color-white);
+  border-bottom: 1px solid var(--color-border);
+  box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+}
+
+.site-title {
+  font-family: 'AdiShilaVedic', serif;
+  font-weight: 700;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--color-maroon);
+}
+
+.site-title:hover {
+  color: var(--color-primary);
+}
+
+/* Breadcrumb styling */
+.breadcrumb {
+  font-family: 'Raleway', sans-serif;
+  font-size: 13px;
+  font-weight: 300;
+}
+
+.breadcrumb a {
+  color: var(--color-primary);
+}
+
+.breadcrumb a:hover {
+  text-decoration: underline;
+}
+
+/* Page titles */
+h1, h2, h3, h4, h5, h6 {
+  font-family: 'AdiShilaVedic', 'Open Sans', sans-serif;
+  font-weight: 400;
+  color: #333;
+}
+
+h1 { font-size: 2.5rem; }
+h2 { font-size: 1.5rem; }
+h3 { font-size: 1.25rem; }
+
+/* Main content area */
+.maintext {
+  font-size: 16px;
+  line-height: 30px;
+}
+
+/* Works/content boxes - matching original .works */
+.content-box {
+  padding: 50px;
+  font-family: 'AdiShilaVedic', serif;
+  font-size: 18px;
+  border: 5px solid rgba(0, 0, 0, 0.03);
+  background-color: rgba(0, 0, 0, 0.02);
+  color: #AAA;
+}
+
+/* Mandala cards - gradient circles */
+.mandala-circle {
+  width: 4rem;
+  height: 4rem;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--color-golden) 0%, var(--color-maroon) 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 1.5rem;
+  font-weight: 700;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+}
+
+/* Layout utilities */
+.container { max-width: 1080px; margin: 0 auto; padding: 0 15px; }
+.max-w-6xl { max-width: 72rem; }
+.mx-auto { margin-left: auto; margin-right: auto; }
+.px-4 { padding-left: 1rem; padding-right: 1rem; }
+.py-3 { padding-top: 0.75rem; padding-bottom: 0.75rem; }
+.py-6 { padding-top: 1.5rem; padding-bottom: 1.5rem; }
+.py-8 { padding-top: 2rem; padding-bottom: 2rem; }
+.mb-2 { margin-bottom: 0.5rem; }
+.mb-3 { margin-bottom: 0.75rem; }
+.mb-4 { margin-bottom: 1rem; }
+.mb-6 { margin-bottom: 1.5rem; }
+.mb-8 { margin-bottom: 2rem; }
+.mb-12 { margin-bottom: 3rem; }
+.mt-2 { margin-top: 0.5rem; }
+.mt-3 { margin-top: 0.75rem; }
+.mt-4 { margin-top: 1rem; }
+.mt-6 { margin-top: 1.5rem; }
+.mt-8 { margin-top: 2rem; }
+.ml-1 { margin-left: 0.25rem; }
+.mx-2 { margin-left: 0.5rem; margin-right: 0.5rem; }
+.pt-4 { padding-top: 1rem; }
+.pt-6 { padding-top: 1.5rem; }
+.gap-2 { gap: 0.5rem; }
+.gap-3 { gap: 0.75rem; }
+.gap-4 { gap: 1rem; }
+.gap-6 { gap: 1.5rem; }
+.space-y-6 > * + * { margin-top: 1.5rem; }
+
+/* Flexbox */
+.flex { display: flex; }
+.flex-wrap { flex-wrap: wrap; }
+.items-center { align-items: center; }
+.justify-between { justify-content: space-between; }
+.justify-center { justify-content: center; }
+
+/* Grid */
+.grid { display: grid; }
+.grid-cols-1 { grid-template-columns: repeat(1, 1fr); }
+.grid-cols-2 { grid-template-columns: repeat(2, 1fr); }
+.grid-cols-4 { grid-template-columns: repeat(4, 1fr); }
+
+@media (min-width: 640px) {
+  .sm\:grid-cols-6 { grid-template-columns: repeat(6, 1fr); }
+}
+@media (min-width: 768px) {
+  .md\:grid-cols-2 { grid-template-columns: repeat(2, 1fr); }
+  .md\:grid-cols-4 { grid-template-columns: repeat(4, 1fr); }
+  .md\:grid-cols-8 { grid-template-columns: repeat(8, 1fr); }
+}
+@media (min-width: 1024px) {
+  .lg\:grid-cols-3 { grid-template-columns: repeat(3, 1fr); }
+  .lg\:grid-cols-10 { grid-template-columns: repeat(10, 1fr); }
+}
+
+/* Text */
+.text-center { text-align: center; }
+.text-sm { font-size: 0.875rem; }
+.text-base { font-size: 1rem; }
+.text-lg { font-size: 1.125rem; }
+.text-xl { font-size: 1.25rem; }
+.text-2xl { font-size: 1.5rem; }
+.text-3xl { font-size: 1.875rem; }
+.text-5xl { font-size: 3rem; }
+.font-medium { font-weight: 500; }
+.font-semibold { font-weight: 600; }
+.font-bold { font-weight: 700; }
+.leading-relaxed { line-height: 1.625; }
+.leading-loose { line-height: 2; }
+
+/* Colors */
+.text-white { color: white; }
+.text-gray-500 { color: #6b7280; }
+.text-gray-600 { color: var(--color-text-light); }
+.text-gray-700 { color: var(--color-text); }
+.text-gray-800 { color: #333; }
+.text-maroon { color: var(--color-maroon); }
+.text-terracotta { color: var(--color-primary); }
+.text-saffron { color: var(--color-golden); }
+.text-primary { color: var(--color-primary); }
+.bg-white { background-color: white; }
+.bg-amber-50 { background-color: #fffbeb; }
+.bg-amber-100 { background-color: #fef3c7; }
+
+/* Borders */
+.border { border-width: 1px; border-style: solid; border-color: var(--color-border); }
+.border-t { border-top: 1px solid var(--color-border); }
+.border-b { border-bottom: 1px solid var(--color-border); }
+.border-amber-100 { border-color: #fef3c7; }
+.border-amber-200 { border-color: #fde68a; }
+.rounded { border-radius: 0.25rem; }
+.rounded-lg { border-radius: 0.5rem; }
+.rounded-xl { border-radius: 0.75rem; }
+.rounded-full { border-radius: 9999px; }
+
+/* Effects */
+.shadow { box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+.shadow-sm { box-shadow: 0 1px 2px rgba(0,0,0,0.05); }
+.shadow-md { box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); }
+.shadow-lg { box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); }
+
+/* Positioning */
+.sticky { position: sticky; }
+.top-0 { top: 0; }
+.z-50 { z-index: 50; }
+.block { display: block; }
+.inline-block { display: inline-block; }
+
+/* Sizing */
+.w-16 { width: 4rem; }
+.w-20 { width: 5rem; }
+.h-16 { height: 4rem; }
+.h-20 { height: 5rem; }
+.min-h-screen { min-height: 100vh; }
+.max-w-none { max-width: none; }
+.max-w-3xl { max-width: 48rem; }
+
+/* Interactive */
+.cursor-pointer { cursor: pointer; }
+.transition-colors { transition: color 0.2s, background-color 0.2s; }
+.transition-all { transition: all 0.2s; }
+.hover\:underline:hover { text-decoration: underline; }
+.hover\:text-terracotta:hover { color: var(--color-primary); }
+.hover\:text-maroon:hover { color: var(--color-maroon); }
+.hover\:shadow-xl:hover { box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1); }
+.hover\:scale-\[1\.02\]:hover { transform: scale(1.02); }
+
+/* Gradient backgrounds */
+.bg-gradient-to-br {
+  background: linear-gradient(135deg, var(--color-golden), var(--color-maroon));
+}
+
+/* Group hover */
+.group:hover .group-hover\:text-terracotta { color: var(--color-primary); }
+
+/* Details/Summary */
+details summary { 
+  list-style: none; 
+  cursor: pointer;
+  font-family: 'Raleway', sans-serif;
+}
+details summary::-webkit-details-marker { display: none; }
+details[open] summary { margin-bottom: 0.75rem; }
+
+/* Collapsible sections with arrow indicator */
+.collapsible {
+  border-color: #eee;
+}
+
+.collapsible-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 0;
+  font-size: 0.95rem;
+  font-weight: 500;
+  color: var(--color-primary);
+  cursor: pointer;
+  transition: color 0.2s;
+}
+
+.collapsible-header:hover {
+  color: var(--color-maroon);
+}
+
+.collapsible-icon {
+  display: inline-block;
+  font-size: 0.75rem;
+  transition: transform 0.2s ease;
+  color: var(--color-golden);
+}
+
+details[open] .collapsible-icon {
+  transform: rotate(90deg);
+}
+
+/* Prose for commentary */
+.prose { 
+  max-width: 65ch; 
+  font-family: 'AdiShilaVedic', serif;
+  line-height: 1.8;
+}
+.prose p { margin-bottom: 1em; }
+.prose-amber a { color: var(--color-primary); }
+
+/* Header styles */
+header.sticky {
+  background: rgba(255, 255, 255, 0.98);
+  backdrop-filter: blur(8px);
+}
+
+/* Sukta number grid */
+.sukta-link {
+  padding: 0.5rem 0.75rem;
+  text-align: center;
+  border-radius: 4px;
+  background: rgba(255,255,255,0.8);
+  font-weight: 500;
+  transition: all 0.2s;
+  border: 1px solid rgba(0,0,0,0.05);
+}
+
+.sukta-link:hover {
+  background: var(--color-golden);
+  color: white;
+}
+
+/* Footer */
+footer {
+  margin-top: 100px;
+  background: rgba(255,255,255,0.9);
+}
+
+/* Fancy section dividers - from original */
+.fancy {
+  font-size: 24px;
+  line-height: 0.5;
+  text-align: center;
+  margin: 30px 0 60px;
+}
+
+.fancy span {
+  display: inline-block;
+  position: relative;
+}
+
+.fancy span:before,
+.fancy span:after {
+  content: "";
+  position: absolute;
+  height: 15px;
+  border-bottom: 1px solid var(--color-indigo);
+  border-top: 1px solid var(--color-indigo);
+  top: 0;
+  width: 200px;
+}
+
+.fancy span:before {
+  right: 100%;
+  margin-right: 15px;
+}
+
+.fancy span:after {
+  left: 100%;
+  margin-left: 15px;
+}
+
+/* px-2 py-1 utilities */
+.px-2 { padding-left: 0.5rem; padding-right: 0.5rem; }
+.py-1 { padding-top: 0.25rem; padding-bottom: 0.25rem; }
+.w-12 { width: 3rem; }
+.h-12 { height: 3rem; }
+
+/* Header Banner - matching original #head */
+/* Note: background-image is set inline in BaseLayout.astro for base URL support */
+.header-banner {
+  background-color: #f4f4f4;
+  background-position: top center;
+  background-size: cover;
+  padding: 60px 0 50px 0;
+  text-align: center;
+}
+
+.header-content {
+  max-width: 1080px;
+  margin: 0 auto;
+  padding: 0 15px;
+}
+
+.header-logo {
+  display: block;
+  width: 140px;
+  height: 140px;
+  margin: 0 auto 20px;
+  border-radius: 50%;
+}
+
+.header-title {
+  font-family: 'AdiShilaVedic', serif;
+  color: #fff;
+  font-weight: 700;
+  font-size: 48px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+  margin-bottom: 10px;
+}
+
+.header-tagline {
+  font-family: 'Raleway', sans-serif;
+  font-size: 16px;
+  color: #fff;
+  text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+}
+
+/* Navbar - matching original */
+.navbar {
+  background-color: #fff;
+  border-bottom: 1px solid #ccc;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+}
+
+/* ===================== */
+/* Mobile Responsiveness */
+/* ===================== */
+
+@media (max-width: 768px) {
+  /* Typography adjustments */
+  .sanskrit-text {
+    font-size: 18px;
+    line-height: 1.8;
+  }
+
+  h1 { font-size: 1.75rem; }
+  h2 { font-size: 1.25rem; }
+  .text-5xl { font-size: 2rem; }
+  .text-2xl { font-size: 1.25rem; }
+  .text-xl { font-size: 1.1rem; }
+
+  /* Card adjustments */
+  .verse-card {
+    padding: 15px;
+    margin-bottom: 15px;
+  }
+
+  /* Header banner */
+  .header-banner {
+    padding: 30px 0 25px 0;
+  }
+
+  .header-logo {
+    width: 80px;
+    height: 80px;
+    margin-bottom: 15px;
+  }
+
+  .header-title {
+    font-size: 28px;
+    letter-spacing: 1px;
+  }
+
+  .header-tagline {
+    font-size: 14px;
+  }
+
+  /* Grid adjustments */
+  .grid-cols-1,
+  .md\:grid-cols-2,
+  .lg\:grid-cols-3 {
+    grid-template-columns: 1fr;
+  }
+
+  .grid-cols-2 {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  /* Spacing */
+  .mb-12 { margin-bottom: 2rem; }
+  .mb-8 { margin-bottom: 1.5rem; }
+  .mb-6 { margin-bottom: 1rem; }
+  .py-8 { padding-top: 1.5rem; padding-bottom: 1.5rem; }
+  .py-6 { padding-top: 1rem; padding-bottom: 1rem; }
+  .px-4 { padding-left: 0.75rem; padding-right: 0.75rem; }
+  .gap-6 { gap: 1rem; }
+  .gap-4 { gap: 0.75rem; }
+
+  /* Navigation links */
+  .nav-link {
+    padding: 8px 12px;
+    font-size: 14px;
+  }
+
+  /* Fancy divider */
+  .fancy span:before,
+  .fancy span:after {
+    width: 60px;
+  }
+
+  /* Flex wrap on mobile */
+  .flex-wrap {
+    gap: 0.5rem;
+  }
+
+  /* Touch-friendly buttons */
+  button, 
+  .nav-link,
+  a.sukta-link {
+    min-height: 44px;
+    min-width: 44px;
+  }
+
+  /* Max width adjustments */
+  .max-w-3xl {
+    max-width: 100%;
+    padding: 0 1rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .sanskrit-text {
+    font-size: 16px;
+  }
+
+  .header-title {
+    font-size: 24px;
+  }
+
+  .verse-card {
+    padding: 12px;
+  }
+
+  h1 { font-size: 1.5rem; }
+}
+
+/* Hide on mobile utility */
+@media (max-width: 768px) {
+  .hide-mobile {
+    display: none !important;
+  }
+}
+
+/* Hide on desktop utility */
+@media (min-width: 769px) {
+  .hide-desktop {
+    display: none !important;
+  }
+}

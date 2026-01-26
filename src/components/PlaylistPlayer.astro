@@ -1,0 +1,425 @@
+---
+interface Track {
+  id: string;
+  label: string;
+  src: string;
+}
+
+interface Props {
+  tracks: Track[];
+  title?: string;
+}
+
+const { tracks, title = 'श्रवणम्' } = Astro.props;
+---
+
+<div class="playlist-player" data-tracks={JSON.stringify(tracks)}>
+  <div class="player-header">
+    <h4 class="player-title">{title}</h4>
+    <span class="track-info">
+      <span class="current-track">1</span> / <span class="total-tracks">{tracks.length}</span>
+    </span>
+  </div>
+  
+  <div class="now-playing">
+    <span class="now-playing-label">ऋक्:</span>
+    <span class="now-playing-id">{tracks[0]?.label || '-'}</span>
+  </div>
+  
+  <audio class="main-audio" preload="none">
+    <source src={tracks[0]?.src} type="audio/mpeg">
+  </audio>
+  
+  <div class="controls">
+    <button class="control-btn" data-action="prev" title="पूर्वम्">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+        <path d="M6 6h2v12H6zm3.5 6l8.5 6V6z"/>
+      </svg>
+    </button>
+    <button class="control-btn play-btn" data-action="play" title="चालयतु">
+      <svg class="icon-play" width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+        <path d="M8 5v14l11-7z"/>
+      </svg>
+      <svg class="icon-pause" width="24" height="24" viewBox="0 0 24 24" fill="currentColor" style="display:none">
+        <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/>
+      </svg>
+    </button>
+    <button class="control-btn" data-action="next" title="अग्रिमम्">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+        <path d="M6 18l8.5-6L6 6v12zM16 6v12h2V6h-2z"/>
+      </svg>
+    </button>
+    <button class="control-btn" data-action="stop" title="स्थगयतु">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+        <path d="M6 6h12v12H6z"/>
+      </svg>
+    </button>
+  </div>
+  
+  <div class="progress-container">
+    <span class="time current-time">0:00</span>
+    <input type="range" class="progress-bar" value="0" min="0" max="100" step="0.1">
+    <span class="time duration">0:00</span>
+  </div>
+  
+  <div class="playlist-container">
+    <div class="playlist-header" data-action="toggle-playlist">
+      <span>▶ सर्वाणि ऋक्कानि ({tracks.length})</span>
+    </div>
+    <ul class="playlist" style="display: none;">
+      {tracks.map((track, index) => (
+        <li class="playlist-item" data-index={index}>
+          <span class="item-number">{index + 1}.</span>
+          <span class="item-label">{track.label}</span>
+          <span class="item-status"></span>
+        </li>
+      ))}
+    </ul>
+  </div>
+</div>
+
+<script>
+  document.querySelectorAll('.playlist-player').forEach(player => {
+    const tracks = JSON.parse(player.dataset.tracks || '[]');
+    const audio = player.querySelector('.main-audio') as HTMLAudioElement;
+    const playBtn = player.querySelector('.play-btn');
+    const iconPlay = player.querySelector('.icon-play') as HTMLElement;
+    const iconPause = player.querySelector('.icon-pause') as HTMLElement;
+    const progressBar = player.querySelector('.progress-bar') as HTMLInputElement;
+    const currentTimeEl = player.querySelector('.current-time');
+    const durationEl = player.querySelector('.duration');
+    const currentTrackEl = player.querySelector('.current-track');
+    const nowPlayingId = player.querySelector('.now-playing-id');
+    const playlistItems = player.querySelectorAll('.playlist-item');
+    const playlist = player.querySelector('.playlist') as HTMLElement;
+    const playlistHeader = player.querySelector('.playlist-header');
+    
+    let currentIndex = 0;
+    let isPlaying = false;
+    
+    function formatTime(seconds: number): string {
+      if (isNaN(seconds)) return '0:00';
+      const mins = Math.floor(seconds / 60);
+      const secs = Math.floor(seconds % 60);
+      return `${mins}:${secs.toString().padStart(2, '0')}`;
+    }
+    
+    function loadTrack(index: number) {
+      if (index < 0 || index >= tracks.length) return;
+      currentIndex = index;
+      audio.src = tracks[index].src;
+      if (currentTrackEl) currentTrackEl.textContent = String(index + 1);
+      if (nowPlayingId) nowPlayingId.textContent = tracks[index].label;
+      
+      // Update playlist highlighting
+      playlistItems.forEach((item, i) => {
+        item.classList.toggle('active', i === index);
+      });
+    }
+    
+    function play() {
+      audio.play();
+      isPlaying = true;
+      iconPlay.style.display = 'none';
+      iconPause.style.display = 'block';
+      playlistItems[currentIndex]?.classList.add('playing');
+    }
+    
+    function pause() {
+      audio.pause();
+      isPlaying = false;
+      iconPlay.style.display = 'block';
+      iconPause.style.display = 'none';
+      playlistItems[currentIndex]?.classList.remove('playing');
+    }
+    
+    function stop() {
+      pause();
+      audio.currentTime = 0;
+      loadTrack(0);
+    }
+    
+    function next() {
+      if (currentIndex < tracks.length - 1) {
+        loadTrack(currentIndex + 1);
+        if (isPlaying) play();
+      } else {
+        stop(); // End of playlist
+      }
+    }
+    
+    function prev() {
+      if (audio.currentTime > 3) {
+        audio.currentTime = 0; // Restart current track
+      } else if (currentIndex > 0) {
+        loadTrack(currentIndex - 1);
+        if (isPlaying) play();
+      }
+    }
+    
+    // Event listeners
+    player.querySelectorAll('.control-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const action = (btn as HTMLElement).dataset.action;
+        switch (action) {
+          case 'play': isPlaying ? pause() : play(); break;
+          case 'prev': prev(); break;
+          case 'next': next(); break;
+          case 'stop': stop(); break;
+        }
+      });
+    });
+    
+    audio.addEventListener('timeupdate', () => {
+      if (currentTimeEl) currentTimeEl.textContent = formatTime(audio.currentTime);
+      if (audio.duration) {
+        progressBar.value = String((audio.currentTime / audio.duration) * 100);
+      }
+    });
+    
+    audio.addEventListener('loadedmetadata', () => {
+      if (durationEl) durationEl.textContent = formatTime(audio.duration);
+    });
+    
+    audio.addEventListener('ended', () => {
+      playlistItems[currentIndex]?.classList.remove('playing');
+      playlistItems[currentIndex]?.classList.add('completed');
+      next();
+    });
+    
+    progressBar.addEventListener('input', () => {
+      if (audio.duration) {
+        audio.currentTime = (parseFloat(progressBar.value) / 100) * audio.duration;
+      }
+    });
+    
+    // Playlist toggle
+    playlistHeader?.addEventListener('click', () => {
+      const isHidden = playlist.style.display === 'none';
+      playlist.style.display = isHidden ? 'block' : 'none';
+      playlistHeader.querySelector('span')!.textContent = 
+        `${isHidden ? '▼' : '▶'} सर्वाणि ऋक्कानि (${tracks.length})`;
+    });
+    
+    // Click on playlist item
+    playlistItems.forEach((item, index) => {
+      item.addEventListener('click', () => {
+        loadTrack(index);
+        play();
+      });
+    });
+  });
+</script>
+
+<style>
+  .playlist-player {
+    background: linear-gradient(135deg, #fdf6e9 0%, #fff9f0 100%);
+    border: 1px solid var(--color-golden);
+    border-radius: 8px;
+    padding: 1rem;
+    margin: 1rem 0;
+  }
+
+  .player-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.5rem;
+  }
+
+  .player-title {
+    font-family: 'AdiShilaVedic', serif;
+    color: var(--color-maroon);
+    font-size: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .player-title::before {
+    content: '🔊';
+  }
+
+  .track-info {
+    font-size: 0.85rem;
+    color: var(--color-text-light);
+    background: rgba(128, 0, 0, 0.1);
+    padding: 0.2rem 0.6rem;
+    border-radius: 12px;
+  }
+
+  .now-playing {
+    font-family: 'AdiShilaVedic', serif;
+    font-size: 1.1rem;
+    color: var(--color-maroon);
+    text-align: center;
+    padding: 0.5rem;
+    margin-bottom: 0.5rem;
+  }
+
+  .now-playing-label {
+    color: var(--color-text-light);
+    font-size: 0.9rem;
+  }
+
+  .main-audio {
+    display: none;
+  }
+
+  .controls {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 0.5rem;
+    margin: 0.75rem 0;
+  }
+
+  .control-btn {
+    background: var(--color-white);
+    border: 1px solid var(--color-golden);
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    color: var(--color-maroon);
+    transition: all 0.2s;
+  }
+
+  .control-btn:hover {
+    background: var(--color-golden);
+    color: white;
+  }
+
+  .control-btn.play-btn {
+    width: 50px;
+    height: 50px;
+    background: var(--color-maroon);
+    color: white;
+    border-color: var(--color-maroon);
+  }
+
+  .control-btn.play-btn:hover {
+    background: var(--color-golden);
+    border-color: var(--color-golden);
+  }
+
+  .progress-container {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin: 0.75rem 0;
+  }
+
+  .time {
+    font-size: 0.8rem;
+    color: var(--color-text-light);
+    min-width: 40px;
+    text-align: center;
+  }
+
+  .progress-bar {
+    flex: 1;
+    height: 6px;
+    -webkit-appearance: none;
+    appearance: none;
+    background: #ddd;
+    border-radius: 3px;
+    cursor: pointer;
+  }
+
+  .progress-bar::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 14px;
+    height: 14px;
+    background: var(--color-maroon);
+    border-radius: 50%;
+    cursor: pointer;
+  }
+
+  .progress-bar::-moz-range-thumb {
+    width: 14px;
+    height: 14px;
+    background: var(--color-maroon);
+    border-radius: 50%;
+    cursor: pointer;
+    border: none;
+  }
+
+  .playlist-container {
+    margin-top: 1rem;
+    border-top: 1px solid rgba(229, 174, 71, 0.3);
+    padding-top: 0.75rem;
+  }
+
+  .playlist-header {
+    cursor: pointer;
+    color: var(--color-maroon);
+    font-size: 0.9rem;
+    padding: 0.25rem 0;
+  }
+
+  .playlist-header:hover {
+    color: var(--color-golden);
+  }
+
+  .playlist {
+    list-style: none;
+    max-height: 200px;
+    overflow-y: auto;
+    margin-top: 0.5rem;
+    border: 1px solid rgba(229, 174, 71, 0.3);
+    border-radius: 4px;
+  }
+
+  .playlist-item {
+    display: flex;
+    align-items: center;
+    padding: 0.5rem 0.75rem;
+    cursor: pointer;
+    font-family: 'AdiShilaVedic', serif;
+    font-size: 0.95rem;
+    border-bottom: 1px solid rgba(229, 174, 71, 0.2);
+    transition: background 0.2s;
+  }
+
+  .playlist-item:last-child {
+    border-bottom: none;
+  }
+
+  .playlist-item:hover {
+    background: rgba(229, 174, 71, 0.15);
+  }
+
+  .playlist-item.active {
+    background: rgba(128, 0, 0, 0.1);
+    color: var(--color-maroon);
+    font-weight: 500;
+  }
+
+  .playlist-item.playing .item-status::after {
+    content: '▶';
+    color: var(--color-maroon);
+  }
+
+  .playlist-item.completed .item-status::after {
+    content: '✓';
+    color: green;
+  }
+
+  .item-number {
+    color: var(--color-text-light);
+    min-width: 2rem;
+  }
+
+  .item-label {
+    flex: 1;
+  }
+
+  .item-status {
+    min-width: 1.5rem;
+    text-align: right;
+  }
+</style>

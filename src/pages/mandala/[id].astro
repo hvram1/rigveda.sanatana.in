@@ -1,0 +1,65 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { getMandalaInfo, MANDALA_NAMES } from '../../lib/utils';
+
+export function getStaticPaths() {
+  return Array.from({ length: 10 }, (_, i) => ({
+    params: { id: String(i + 1) }
+  }));
+}
+
+const { id } = Astro.params;
+const mandalaNum = parseInt(id, 10);
+const { suktas } = getMandalaInfo(mandalaNum);
+const base = import.meta.env.BASE_URL;
+---
+
+<BaseLayout title={MANDALA_NAMES[mandalaNum]}>
+  <nav class="mb-6 text-sm text-gray-600">
+    <a href={base} class="hover:text-terracotta">मुख्यपृष्ठम्</a>
+    <span class="mx-2">›</span>
+    <a href={`${base}mandala`} class="hover:text-terracotta">मण्डलानि</a>
+    <span class="mx-2">›</span>
+    <span class="text-maroon">{MANDALA_NAMES[mandalaNum]}</span>
+  </nav>
+
+  <header class="mb-8">
+    <div class="flex items-center gap-4">
+      <div class="w-20 h-20 rounded-full bg-gradient-to-br from-saffron to-terracotta flex items-center justify-center text-white text-3xl font-bold shadow-lg">
+        {mandalaNum}
+      </div>
+      <div>
+        <h1 class="text-3xl font-bold text-maroon">{MANDALA_NAMES[mandalaNum]}</h1>
+        <p class="text-gray-600">{suktas.length} सूक्तानि</p>
+      </div>
+    </div>
+  </header>
+
+  <section class="verse-card">
+    <h2 class="text-xl font-semibold text-terracotta mb-4">सूक्तानि</h2>
+    <div class="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-8 lg:grid-cols-10 gap-2">
+      {suktas.map(sukta => (
+        <a 
+          href={`${base}sukta/${mandalaNum}/${sukta}`}
+          class="px-3 py-2 text-center rounded-lg bg-amber-50 hover:bg-saffron/30 hover:text-terracotta transition-colors font-medium"
+        >
+          {sukta}
+        </a>
+      ))}
+    </div>
+  </section>
+
+  <nav class="flex justify-between mt-8">
+    {mandalaNum > 1 && (
+      <a href={`${base}mandala/${mandalaNum - 1}`} class="nav-link bg-white shadow">
+        ← {MANDALA_NAMES[mandalaNum - 1]}
+      </a>
+    )}
+    <span></span>
+    {mandalaNum < 10 && (
+      <a href={`${base}mandala/${mandalaNum + 1}`} class="nav-link bg-white shadow">
+        {MANDALA_NAMES[mandalaNum + 1]} →
+      </a>
+    )}
+  </nav>
+</BaseLayout>

@@ -1,0 +1,268 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import padaIndex from '../../data/pada-index.json';
+
+export function getStaticPaths() {
+  const { letters } = padaIndex;
+  return letters
+    .filter(letter => letter !== '[')
+    .map(letter => ({
+      params: { letter },
+      props: { letter }
+    }));
+}
+
+const { letter } = Astro.props;
+const words = padaIndex.byLetter[letter] || [];
+const { letters } = padaIndex;
+
+// Previous and next letters
+const validLetters = letters.filter(l => l !== '[');
+const currentIdx = validLetters.indexOf(letter);
+const prevLetter = currentIdx > 0 ? validLetters[currentIdx - 1] : null;
+const nextLetter = currentIdx < validLetters.length - 1 ? validLetters[currentIdx + 1] : null;
+const base = import.meta.env.BASE_URL;
+---
+
+<BaseLayout title={`पदानुक्रमणिका - ${letter}`}>
+  <div class="pada-container">
+    <header class="page-header">
+      <div class="breadcrumb">
+        <a href={`${base}pada`}>पदानुक्रमणिका</a> →
+      </div>
+      <h1>{letter}</h1>
+      <p class="stats">{words.length.toLocaleString()} पदानि</p>
+      
+      <div class="letter-nav">
+        {prevLetter && (
+          <a href={`${base}pada/${encodeURIComponent(prevLetter)}`} class="nav-btn">← {prevLetter}</a>
+        )}
+        <a href={`${base}pada`} class="nav-btn">सर्वे अक्षराणि</a>
+        {nextLetter && (
+          <a href={`${base}pada/${encodeURIComponent(nextLetter)}`} class="nav-btn">{nextLetter} →</a>
+        )}
+      </div>
+    </header>
+
+    <div class="quick-nav">
+      <span class="quick-label">Quick Jump:</span>
+      {validLetters.map(l => (
+        <a 
+          href={`${base}pada/${encodeURIComponent(l)}`} 
+          class:list={['quick-link', { active: l === letter }]}
+        >
+          {l}
+        </a>
+      ))}
+    </div>
+
+    <div class="word-list">
+      {words.map((entry: any) => (
+        <div class="word-entry" id={entry.word}>
+          <div class="word-header">
+            <span class="word-text">{entry.word}</span>
+            <span class="word-count">{entry.count} ऋचः</span>
+          </div>
+          <div class="verse-refs">
+            {entry.verses.slice(0, 20).map((verseId: string) => {
+              const [m, s, r] = verseId.split('.');
+              return (
+                <a href={`${base}rik/${m}/${s}/${r}`} class="verse-link">{verseId}</a>
+              );
+            })}
+            {entry.verses.length > 20 && (
+              <span class="more">+{entry.verses.length - 20} more</span>
+            )}
+          </div>
+        </div>
+      ))}
+    </div>
+
+    <div class="back-link">
+      <a href={`${base}pada`}>← पदानुक्रमणिका</a>
+    </div>
+  </div>
+</BaseLayout>
+
+<style>
+  .pada-container {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 2rem;
+  }
+
+  .page-header {
+    text-align: center;
+    margin-bottom: 1.5rem;
+  }
+
+  .breadcrumb {
+    font-size: 0.9rem;
+    margin-bottom: 0.5rem;
+  }
+
+  .breadcrumb a {
+    color: var(--color-maroon);
+    text-decoration: none;
+  }
+
+  .page-header h1 {
+    font-family: 'AdiShilaVedic', serif;
+    font-size: 4rem;
+    color: var(--color-maroon);
+    margin-bottom: 0.5rem;
+  }
+
+  .stats {
+    font-family: 'AdiShilaVedic', serif;
+    color: var(--color-golden);
+    font-size: 1.1rem;
+    margin-bottom: 1rem;
+  }
+
+  .letter-nav {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+    flex-wrap: wrap;
+  }
+
+  .nav-btn {
+    font-family: 'AdiShilaVedic', serif;
+    color: var(--color-maroon);
+    text-decoration: none;
+    padding: 0.5rem 1rem;
+    border: 1px solid var(--color-golden);
+    border-radius: 4px;
+    transition: all 0.2s;
+  }
+
+  .nav-btn:hover {
+    background: var(--color-golden);
+    color: white;
+  }
+
+  .quick-nav {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.25rem;
+    padding: 1rem;
+    background: white;
+    border-radius: 8px;
+    margin-bottom: 1.5rem;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  }
+
+  .quick-label {
+    font-size: 0.85rem;
+    color: var(--color-text-light);
+    margin-right: 0.5rem;
+  }
+
+  .quick-link {
+    font-family: 'AdiShilaVedic', serif;
+    padding: 0.25rem 0.5rem;
+    text-decoration: none;
+    color: var(--color-maroon);
+    border-radius: 4px;
+    font-size: 1.1rem;
+  }
+
+  .quick-link:hover {
+    background: rgba(229, 174, 71, 0.2);
+  }
+
+  .quick-link.active {
+    background: var(--color-maroon);
+    color: white;
+  }
+
+  .word-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  .word-entry {
+    background: white;
+    padding: 1rem;
+    border-radius: 8px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    border-left: 4px solid var(--color-golden);
+  }
+
+  .word-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.5rem;
+  }
+
+  .word-text {
+    font-family: 'AdiShilaVedic', serif;
+    font-size: 1.4rem;
+    color: var(--color-maroon);
+    font-weight: 500;
+  }
+
+  .word-count {
+    font-size: 0.85rem;
+    color: var(--color-text-light);
+    background: #f0f0f0;
+    padding: 0.2rem 0.6rem;
+    border-radius: 12px;
+  }
+
+  .verse-refs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+
+  .verse-link {
+    font-size: 0.85rem;
+    color: var(--color-maroon);
+    text-decoration: none;
+    padding: 0.2rem 0.5rem;
+    background: #f8f8f8;
+    border-radius: 4px;
+    transition: all 0.2s;
+  }
+
+  .verse-link:hover {
+    background: var(--color-golden);
+    color: white;
+  }
+
+  .more {
+    font-size: 0.85rem;
+    color: var(--color-text-light);
+    font-style: italic;
+  }
+
+  .back-link {
+    text-align: center;
+    margin-top: 2rem;
+  }
+
+  .back-link a {
+    font-family: 'AdiShilaVedic', serif;
+    color: var(--color-maroon);
+    text-decoration: none;
+  }
+
+  @media (max-width: 768px) {
+    .pada-container {
+      padding: 1rem;
+    }
+
+    .page-header h1 {
+      font-size: 3rem;
+    }
+
+    .word-text {
+      font-size: 1.2rem;
+    }
+  }
+</style>

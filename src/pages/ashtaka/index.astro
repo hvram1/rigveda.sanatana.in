@@ -1,0 +1,243 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { getAllRiks } from '../../lib/utils';
+
+// Get counts for each ashtaka/adhyaya
+const allRiks = await getAllRiks();
+
+// Build ashtaka structure
+const ashtakaData: Map<number, Map<number, number>> = new Map();
+
+for (const rik of allRiks) {
+  const ashtaka = parseInt(rik.classification.ashtaka, 10);
+  const adhyaya = parseInt(rik.classification.adhyaya, 10);
+  
+  if (!ashtakaData.has(ashtaka)) {
+    ashtakaData.set(ashtaka, new Map());
+  }
+  const adhyayaMap = ashtakaData.get(ashtaka)!;
+  adhyayaMap.set(adhyaya, (adhyayaMap.get(adhyaya) || 0) + 1);
+}
+
+// Convert to array for rendering
+const ashtakas = Array.from(ashtakaData.entries())
+  .sort((a, b) => a[0] - b[0])
+  .map(([ashtakaNum, adhyayaMap]) => ({
+    number: ashtakaNum,
+    adhyayas: Array.from(adhyayaMap.entries())
+      .sort((a, b) => a[0] - b[0])
+      .map(([adhyayaNum, count]) => ({
+        number: adhyayaNum,
+        count
+      })),
+    totalRiks: Array.from(adhyayaMap.values()).reduce((a, b) => a + b, 0)
+  }));
+
+const totalRiks = ashtakas.reduce((sum, a) => sum + a.totalRiks, 0);
+
+const ASHTAKA_NAMES: Record<number, string> = {
+  1: 'प्रथमोऽष्टकः',
+  2: 'द्वितीयोऽष्टकः',
+  3: 'तृतीयोऽष्टकः',
+  4: 'चतुर्थोऽष्टकः',
+  5: 'पञ्चमोऽष्टकः',
+  6: 'षष्ठोऽष्टकः',
+  7: 'सप्तमोऽष्टकः',
+  8: 'अष्टमोऽष्टकः'
+};
+
+const ADHYAYA_NAMES: Record<number, string> = {
+  1: 'प्रथमोऽध्यायः',
+  2: 'द्वितीयोऽध्यायः',
+  3: 'तृतीयोऽध्यायः',
+  4: 'चतुर्थोऽध्यायः',
+  5: 'पञ्चमोऽध्यायः',
+  6: 'षष्ठोऽध्यायः',
+  7: 'सप्तमोऽध्यायः',
+  8: 'अष्टमोऽध्यायः'
+};
+---
+
+<BaseLayout title="अष्टकवर्गीकरणम्">
+  <div class="ashtaka-container">
+    <header class="page-header">
+      <h1>अष्टकवर्गीकरणम्</h1>
+      <p class="subtitle">Ashtaka Classification</p>
+      <p class="description">
+        The Rigveda is alternatively organized into 8 Ashtakas (अष्टक), each containing 8 Adhyayas (अध्याय).
+        This system divides the text more evenly than the Mandala system.
+      </p>
+      <p class="stats">{totalRiks.toLocaleString()} ऋचः in 8 अष्टकाः × 8 अध्यायाः = 64 divisions</p>
+    </header>
+
+    <div class="ashtaka-grid">
+      {ashtakas.map(ashtaka => (
+        <div class="ashtaka-card">
+          <div class="ashtaka-header">
+            <h2>{ASHTAKA_NAMES[ashtaka.number]}</h2>
+            <span class="ashtaka-number">अष्टकः {ashtaka.number}</span>
+            <span class="rik-count">{ashtaka.totalRiks} ऋचः</span>
+          </div>
+          <div class="adhyaya-grid">
+            {ashtaka.adhyayas.map(adhyaya => (
+              <a href={`/ashtaka/${ashtaka.number}/${adhyaya.number}`} class="adhyaya-link">
+                <span class="adhyaya-name">अध्यायः {adhyaya.number}</span>
+                <span class="adhyaya-count">{adhyaya.count}</span>
+              </a>
+            ))}
+          </div>
+        </div>
+      ))}
+    </div>
+
+    <div class="back-link">
+      <a href="/">← मुख्यपृष्ठम्</a>
+    </div>
+  </div>
+</BaseLayout>
+
+<style>
+  .ashtaka-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 2rem;
+  }
+
+  .page-header {
+    text-align: center;
+    margin-bottom: 2rem;
+  }
+
+  .page-header h1 {
+    font-family: 'AdiShilaVedic', serif;
+    font-size: 2.5rem;
+    color: var(--color-maroon);
+    margin-bottom: 0.5rem;
+  }
+
+  .subtitle {
+    color: var(--color-text-light);
+    font-size: 1.1rem;
+    margin-bottom: 1rem;
+  }
+
+  .description {
+    max-width: 700px;
+    margin: 0 auto 1rem;
+    color: var(--color-text);
+    line-height: 1.6;
+  }
+
+  .stats {
+    font-family: 'AdiShilaVedic', serif;
+    color: var(--color-golden);
+    font-size: 1.1rem;
+  }
+
+  .ashtaka-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 1.5rem;
+  }
+
+  .ashtaka-card {
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    overflow: hidden;
+  }
+
+  .ashtaka-header {
+    background: linear-gradient(135deg, var(--color-maroon) 0%, #a00000 100%);
+    color: white;
+    padding: 1rem;
+    text-align: center;
+  }
+
+  .ashtaka-header h2 {
+    font-family: 'AdiShilaVedic', serif;
+    font-size: 1.3rem;
+    margin-bottom: 0.25rem;
+  }
+
+  .ashtaka-number {
+    font-size: 0.85rem;
+    opacity: 0.9;
+    display: block;
+  }
+
+  .rik-count {
+    font-family: 'AdiShilaVedic', serif;
+    font-size: 0.9rem;
+    background: rgba(255,255,255,0.2);
+    padding: 0.2rem 0.6rem;
+    border-radius: 12px;
+    display: inline-block;
+    margin-top: 0.5rem;
+  }
+
+  .adhyaya-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1px;
+    background: #eee;
+    padding: 1px;
+  }
+
+  .adhyaya-link {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 0.75rem;
+    background: white;
+    text-decoration: none;
+    transition: all 0.2s;
+  }
+
+  .adhyaya-link:hover {
+    background: #fff9f0;
+    transform: translateY(-2px);
+  }
+
+  .adhyaya-name {
+    font-family: 'AdiShilaVedic', serif;
+    color: var(--color-maroon);
+    font-size: 0.9rem;
+  }
+
+  .adhyaya-count {
+    color: var(--color-text-light);
+    font-size: 0.8rem;
+    margin-top: 0.25rem;
+  }
+
+  .back-link {
+    text-align: center;
+    margin-top: 2rem;
+  }
+
+  .back-link a {
+    font-family: 'AdiShilaVedic', serif;
+    color: var(--color-maroon);
+    text-decoration: none;
+    font-size: 1.1rem;
+  }
+
+  .back-link a:hover {
+    color: var(--color-golden);
+  }
+
+  @media (max-width: 768px) {
+    .ashtaka-container {
+      padding: 1rem;
+    }
+
+    .page-header h1 {
+      font-size: 1.8rem;
+    }
+
+    .ashtaka-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>

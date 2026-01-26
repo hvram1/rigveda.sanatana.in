@@ -1,0 +1,229 @@
+---
+import AttributeLayout from '../../layouts/AttributeLayout.astro';
+import { getAttributeIndex } from '../../lib/utils';
+
+const rishis = getAttributeIndex('rishi');
+const totalVerses = rishis.reduce((sum, r) => sum + r.count, 0);
+
+// Top rishis by verse count
+const topRishis = [...rishis].sort((a, b) => b.count - a.count).slice(0, 20);
+
+// Group by first letter
+const letterGroups = new Map<string, typeof rishis>();
+for (const rishi of rishis) {
+  const firstChar = rishi.name.charAt(0);
+  if (!letterGroups.has(firstChar)) {
+    letterGroups.set(firstChar, []);
+  }
+  letterGroups.get(firstChar)!.push(rishi);
+}
+
+// Sort letters
+const sortedLetters = Array.from(letterGroups.keys()).sort((a, b) => a.localeCompare(b, 'sa'));
+---
+
+<AttributeLayout title="ऋषयः">
+  <header class="mb-6 verse-card">
+    <h1 class="text-2xl font-bold text-maroon mb-2">ऋषयः</h1>
+    <p class="text-gray-600">{rishis.length} ऋषयः, {totalVerses} ऋचः</p>
+  </header>
+
+  <!-- Top Rishis Section -->
+  <section class="mb-6 verse-card">
+    <h2 class="text-lg font-semibold text-terracotta mb-4">प्रमुखाः ऋषयः</h2>
+    <div class="top-rishis-grid">
+      {topRishis.map((rishi, i) => (
+        <a 
+          href={`/rishi/${encodeURIComponent(rishi.name)}`}
+          class="top-rishi-item"
+        >
+          <span class="top-rishi-rank">{i + 1}</span>
+          <span class="top-rishi-name">{rishi.name}</span>
+          <span class="top-rishi-count">{rishi.count} ऋचः</span>
+        </a>
+      ))}
+    </div>
+  </section>
+
+  <!-- Alphabetical Navigation -->
+  <section class="mb-4 verse-card">
+    <h2 class="text-lg font-semibold text-terracotta mb-3">वर्णानुक्रमेण</h2>
+    <div class="letter-nav">
+      {sortedLetters.map(letter => (
+        <a href={`#letter-${letter}`} class="letter-btn">
+          {letter}
+          <span class="letter-count">{letterGroups.get(letter)!.length}</span>
+        </a>
+      ))}
+    </div>
+  </section>
+
+  <!-- All Rishis by Letter -->
+  <section class="verse-card">
+    {sortedLetters.map(letter => (
+      <div id={`letter-${letter}`} class="letter-section">
+        <h3 class="letter-header">{letter}</h3>
+        <div class="attr-grid">
+          {letterGroups.get(letter)!.map(rishi => (
+            <a 
+              href={`/rishi/${encodeURIComponent(rishi.name)}`}
+              class="attr-item"
+            >
+              <span class="attr-name">{rishi.name}</span>
+              <span class="attr-count">{rishi.count}</span>
+            </a>
+          ))}
+        </div>
+      </div>
+    ))}
+  </section>
+</AttributeLayout>
+
+<style>
+  .top-rishis-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 0.5rem;
+  }
+
+  .top-rishi-item {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.6rem 0.75rem;
+    background: linear-gradient(135deg, #fff9f0 0%, #fff 100%);
+    border: 1px solid #f0e6d6;
+    border-radius: 6px;
+    transition: all 0.15s;
+  }
+
+  .top-rishi-item:hover {
+    background: var(--color-golden);
+    border-color: var(--color-golden);
+    color: white;
+  }
+
+  .top-rishi-rank {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    background: var(--color-maroon);
+    color: white;
+    border-radius: 50%;
+    font-size: 0.75rem;
+    font-weight: 600;
+  }
+
+  .top-rishi-item:hover .top-rishi-rank {
+    background: rgba(255,255,255,0.3);
+  }
+
+  .top-rishi-name {
+    flex: 1;
+    font-family: 'AdiShilaVedic', serif;
+    font-weight: 500;
+  }
+
+  .top-rishi-count {
+    font-size: 0.8rem;
+    color: #888;
+  }
+
+  .top-rishi-item:hover .top-rishi-count {
+    color: rgba(255,255,255,0.9);
+  }
+
+  .letter-nav {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem;
+  }
+
+  .letter-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    padding: 0.4rem 0.6rem;
+    background: #f5f5f5;
+    border-radius: 4px;
+    font-family: 'AdiShilaVedic', serif;
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--color-maroon);
+    transition: all 0.15s;
+  }
+
+  .letter-btn:hover {
+    background: var(--color-golden);
+    color: white;
+  }
+
+  .letter-count {
+    font-size: 0.7rem;
+    font-weight: normal;
+    color: #999;
+  }
+
+  .letter-btn:hover .letter-count {
+    color: rgba(255,255,255,0.8);
+  }
+
+  .letter-section {
+    margin-bottom: 1.5rem;
+    padding-top: 0.5rem;
+  }
+
+  .letter-section:last-child {
+    margin-bottom: 0;
+  }
+
+  .letter-header {
+    font-family: 'AdiShilaVedic', serif;
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--color-maroon);
+    padding-bottom: 0.5rem;
+    margin-bottom: 0.75rem;
+    border-bottom: 2px solid var(--color-golden);
+  }
+
+  .attr-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 0.4rem;
+  }
+
+  .attr-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.4rem 0.6rem;
+    background: #f9f9f9;
+    border-radius: 4px;
+    transition: all 0.15s;
+  }
+
+  .attr-item:hover {
+    background: var(--color-golden);
+    color: white;
+  }
+
+  .attr-name {
+    font-family: 'AdiShilaVedic', serif;
+  }
+
+  .attr-count {
+    font-size: 0.75rem;
+    color: #888;
+    background: rgba(0,0,0,0.05);
+    padding: 0.1rem 0.35rem;
+    border-radius: 3px;
+  }
+
+  .attr-item:hover .attr-count {
+    background: rgba(255,255,255,0.3);
+    color: white;
+  }
+</style>

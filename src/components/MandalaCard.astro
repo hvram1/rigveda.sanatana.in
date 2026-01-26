@@ -1,0 +1,26 @@
+---
+import { MANDALA_NAMES } from '../lib/utils';
+
+interface Props {
+  number: number;
+  suktaCount: number;
+}
+
+const { number, suktaCount } = Astro.props;
+const base = import.meta.env.BASE_URL;
+---
+
+<a 
+  href={`${base}sukta/${number}/1`}
+  class="verse-card block hover:shadow-xl hover:scale-[1.02] transition-all duration-300"
+>
+  <div class="flex items-center gap-4">
+    <div class="w-16 h-16 rounded-full bg-gradient-to-br from-saffron to-terracotta flex items-center justify-center text-white text-2xl font-bold shadow-md">
+      {number}
+    </div>
+    <div>
+      <h2 class="text-xl font-semibold text-maroon">{MANDALA_NAMES[number]}</h2>
+      <p class="text-gray-600">{suktaCount} सूक्तानि</p>
+    </div>
+  </div>
+</a>

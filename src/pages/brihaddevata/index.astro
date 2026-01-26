@@ -1,0 +1,179 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import brihaddevata from '../../data/brihaddevata.json';
+
+const { title, description, totalAdhyayas, totalVerses, adhyayas } = brihaddevata;
+
+const ADHYAYA_NAMES: Record<number, string> = {
+  1: 'प्रथमोऽध्यायः',
+  2: 'द्वितीयोऽध्यायः',
+  3: 'तृतीयोऽध्यायः',
+  4: 'चतुर्थोऽध्यायः',
+  5: 'पञ्चमोऽध्यायः',
+  6: 'षष्ठोऽध्यायः',
+  7: 'सप्तमोऽध्यायः',
+  8: 'अष्टमोऽध्यायः'
+};
+---
+
+<BaseLayout title="बृहद्देवता">
+  <div class="bd-container">
+    <header class="page-header">
+      <h1>{title}</h1>
+      <p class="subtitle">Bṛhaddevatā</p>
+      <p class="author">शौनककृतम् (By Shaunaka)</p>
+      <p class="description">
+        {description}. This text systematically explains the deities (devatās) of each 
+        Rigvedic hymn, providing essential context for proper ritual application.
+      </p>
+      <p class="stats">{totalAdhyayas} अध्यायाः, {totalVerses} श्लोकाः</p>
+    </header>
+
+    <div class="adhyaya-grid">
+      {adhyayas.map((adhyaya: any) => (
+        <a href={`/brihaddevata/${adhyaya.adhyaya}`} class="adhyaya-card">
+          <div class="adhyaya-num">{adhyaya.adhyaya}</div>
+          <div class="adhyaya-info">
+            <h2>{ADHYAYA_NAMES[adhyaya.adhyaya] || adhyaya.title}</h2>
+            <p>{adhyaya.verses.length} श्लोकाः</p>
+          </div>
+        </a>
+      ))}
+    </div>
+
+    <div class="back-link">
+      <a href="/">← मुख्यपृष्ठम्</a>
+    </div>
+  </div>
+</BaseLayout>
+
+<style>
+  .bd-container {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 2rem;
+  }
+
+  .page-header {
+    text-align: center;
+    margin-bottom: 2rem;
+  }
+
+  .page-header h1 {
+    font-family: 'AdiShilaVedic', serif;
+    font-size: 2.5rem;
+    color: var(--color-maroon);
+    margin-bottom: 0.25rem;
+  }
+
+  .subtitle {
+    color: var(--color-text-light);
+    font-size: 1.2rem;
+    margin-bottom: 0.5rem;
+  }
+
+  .author {
+    font-family: 'AdiShilaVedic', serif;
+    color: var(--color-golden);
+    font-size: 1.1rem;
+    margin-bottom: 1rem;
+  }
+
+  .description {
+    max-width: 700px;
+    margin: 0 auto 1rem;
+    color: var(--color-text);
+    line-height: 1.6;
+  }
+
+  .stats {
+    font-family: 'AdiShilaVedic', serif;
+    color: var(--color-maroon);
+    font-size: 1.1rem;
+    background: rgba(128, 0, 0, 0.1);
+    display: inline-block;
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+  }
+
+  .adhyaya-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1rem;
+    margin-bottom: 2rem;
+  }
+
+  .adhyaya-card {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    background: white;
+    padding: 1.25rem;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    text-decoration: none;
+    transition: all 0.2s;
+    border-left: 4px solid var(--color-golden);
+  }
+
+  .adhyaya-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    border-left-color: var(--color-maroon);
+  }
+
+  .adhyaya-num {
+    font-family: 'AdiShilaVedic', serif;
+    font-size: 2rem;
+    font-weight: bold;
+    color: var(--color-maroon);
+    background: rgba(128, 0, 0, 0.1);
+    width: 60px;
+    height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+  }
+
+  .adhyaya-info h2 {
+    font-family: 'AdiShilaVedic', serif;
+    font-size: 1.1rem;
+    color: var(--color-maroon);
+    margin-bottom: 0.25rem;
+  }
+
+  .adhyaya-info p {
+    font-size: 0.9rem;
+    color: var(--color-text-light);
+  }
+
+  .back-link {
+    text-align: center;
+  }
+
+  .back-link a {
+    font-family: 'AdiShilaVedic', serif;
+    color: var(--color-maroon);
+    text-decoration: none;
+    font-size: 1.1rem;
+  }
+
+  .back-link a:hover {
+    color: var(--color-golden);
+  }
+
+  @media (max-width: 768px) {
+    .bd-container {
+      padding: 1rem;
+    }
+
+    .page-header h1 {
+      font-size: 2rem;
+    }
+
+    .adhyaya-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>

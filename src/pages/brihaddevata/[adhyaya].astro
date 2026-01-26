@@ -1,0 +1,197 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import brihaddevata from '../../data/brihaddevata.json';
+
+export function getStaticPaths() {
+  return brihaddevata.adhyayas.map((adhyaya: any) => ({
+    params: { adhyaya: String(adhyaya.adhyaya) },
+    props: { adhyayaData: adhyaya }
+  }));
+}
+
+const { adhyaya } = Astro.params;
+const { adhyayaData } = Astro.props;
+const adhyayaNum = parseInt(adhyaya, 10);
+
+const ADHYAYA_NAMES: Record<number, string> = {
+  1: 'प्रथमोऽध्यायः',
+  2: 'द्वितीयोऽध्यायः',
+  3: 'तृतीयोऽध्यायः',
+  4: 'चतुर्थोऽध्यायः',
+  5: 'पञ्चमोऽध्यायः',
+  6: 'षष्ठोऽध्यायः',
+  7: 'सप्तमोऽध्यायः',
+  8: 'अष्टमोऽध्यायः'
+};
+
+const prevAdhyaya = adhyayaNum > 1 ? adhyayaNum - 1 : null;
+const nextAdhyaya = adhyayaNum < brihaddevata.totalAdhyayas ? adhyayaNum + 1 : null;
+const base = import.meta.env.BASE_URL;
+---
+
+<BaseLayout title={`बृहद्देवता - ${ADHYAYA_NAMES[adhyayaNum]}`}>
+  <div class="bd-container">
+    <header class="page-header">
+      <div class="breadcrumb">
+        <a href={`${base}brihaddevata`}>बृहद्देवता</a> →
+      </div>
+      <h1>{ADHYAYA_NAMES[adhyayaNum]}</h1>
+      <p class="stats">{adhyayaData.verses.length} श्लोकाः</p>
+      
+      <nav class="adhyaya-nav">
+        {prevAdhyaya && (
+          <a href={`${base}brihaddevata/${prevAdhyaya}`} class="nav-btn">← {ADHYAYA_NAMES[prevAdhyaya]}</a>
+        )}
+        <a href={`${base}brihaddevata`} class="nav-btn">सर्वे अध्यायाः</a>
+        {nextAdhyaya && (
+          <a href={`${base}brihaddevata/${nextAdhyaya}`} class="nav-btn">{ADHYAYA_NAMES[nextAdhyaya]} →</a>
+        )}
+      </nav>
+    </header>
+
+    <div class="verses-list">
+      {adhyayaData.verses.map((verse: any, index: number) => (
+        <div class="verse-card" id={`v${index + 1}`}>
+          <span class="verse-num">{index + 1}</span>
+          <p class="verse-text">{verse.text}</p>
+        </div>
+      ))}
+    </div>
+
+    <nav class="bottom-nav">
+      {prevAdhyaya && (
+        <a href={`${base}brihaddevata/${prevAdhyaya}`} class="nav-btn">← {ADHYAYA_NAMES[prevAdhyaya]}</a>
+      )}
+      {nextAdhyaya && (
+        <a href={`${base}brihaddevata/${nextAdhyaya}`} class="nav-btn">{ADHYAYA_NAMES[nextAdhyaya]} →</a>
+      )}
+    </nav>
+
+    <div class="back-link">
+      <a href={`${base}brihaddevata`}>← बृहद्देवता</a>
+    </div>
+  </div>
+</BaseLayout>
+
+<style>
+  .bd-container {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 2rem;
+  }
+
+  .page-header {
+    text-align: center;
+    margin-bottom: 2rem;
+  }
+
+  .breadcrumb {
+    font-size: 0.9rem;
+    margin-bottom: 0.5rem;
+  }
+
+  .breadcrumb a {
+    color: var(--color-maroon);
+    text-decoration: none;
+  }
+
+  .page-header h1 {
+    font-family: 'AdiShilaVedic', serif;
+    font-size: 2rem;
+    color: var(--color-maroon);
+    margin-bottom: 0.5rem;
+  }
+
+  .stats {
+    font-family: 'AdiShilaVedic', serif;
+    color: var(--color-golden);
+    margin-bottom: 1rem;
+  }
+
+  .adhyaya-nav, .bottom-nav {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+    flex-wrap: wrap;
+  }
+
+  .nav-btn {
+    font-family: 'AdiShilaVedic', serif;
+    color: var(--color-maroon);
+    text-decoration: none;
+    padding: 0.5rem 1rem;
+    border: 1px solid var(--color-golden);
+    border-radius: 4px;
+    transition: all 0.2s;
+    font-size: 0.9rem;
+  }
+
+  .nav-btn:hover {
+    background: var(--color-golden);
+    color: white;
+  }
+
+  .verses-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .verse-card {
+    display: flex;
+    gap: 1rem;
+    background: white;
+    padding: 1rem 1.25rem;
+    border-radius: 8px;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.1);
+    border-left: 3px solid var(--color-golden);
+  }
+
+  .verse-num {
+    font-family: 'AdiShilaVedic', serif;
+    font-size: 1rem;
+    font-weight: bold;
+    color: var(--color-golden);
+    min-width: 2rem;
+  }
+
+  .verse-text {
+    font-family: 'AdiShilaVedic', serif;
+    font-size: 1.15rem;
+    color: var(--color-text);
+    line-height: 1.8;
+  }
+
+  .bottom-nav {
+    margin: 2rem 0;
+  }
+
+  .back-link {
+    text-align: center;
+  }
+
+  .back-link a {
+    font-family: 'AdiShilaVedic', serif;
+    color: var(--color-maroon);
+    text-decoration: none;
+  }
+
+  @media (max-width: 768px) {
+    .bd-container {
+      padding: 1rem;
+    }
+
+    .page-header h1 {
+      font-size: 1.5rem;
+    }
+
+    .verse-card {
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+
+    .verse-text {
+      font-size: 1.05rem;
+    }
+  }
+</style>

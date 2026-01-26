@@ -1,0 +1,124 @@
+---
+import AttributeLayout from '../../layouts/AttributeLayout.astro';
+import { getAttributeIndex, getVersesByAttribute, MANDALA_NAMES } from '../../lib/utils';
+
+export function getStaticPaths() {
+  const devatas = getAttributeIndex('devata');
+  return devatas.map(d => ({
+    params: { name: d.name },
+    props: { devata: d }
+  }));
+}
+
+const { name } = Astro.params;
+const { devata } = Astro.props;
+const versesByMandala = getVersesByAttribute('devata', name);
+const base = import.meta.env.BASE_URL;
+---
+
+<AttributeLayout title={`देवता - ${name}`}>
+  <nav class="mb-4 text-sm">
+    <a href={`${base}devata`} class="back-link">← सर्वे देवताः</a>
+  </nav>
+
+  <header class="mb-6 verse-card">
+    <div class="text-sm text-gray-500 mb-1">देवता</div>
+    <h1 class="text-2xl font-bold text-maroon mb-2">{name}</h1>
+    <p class="text-gray-600">{devata.count} ऋचः</p>
+  </header>
+
+  <div class="space-y-4">
+    {Array.from(versesByMandala.entries()).sort((a, b) => a[0] - b[0]).map(([mandala, suktas]) => (
+      <div class="verse-card">
+        <h2 class="text-lg font-semibold text-terracotta mb-3">{MANDALA_NAMES[mandala]}</h2>
+        <div class="sukta-list">
+          {Array.from(suktas.entries()).sort((a, b) => a[0] - b[0]).map(([sukta, riks]) => (
+            <div class="sukta-row">
+              <a href={`${base}sukta/${mandala}/${sukta}`} class="sukta-label">
+                सूक्तम् {sukta}
+              </a>
+              <div class="rik-links">
+                {riks.map(rik => (
+                  <a href={`${base}rik/${mandala}/${sukta}/${rik}`} class="rik-link">
+                    {rik}
+                  </a>
+                ))}
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    ))}
+  </div>
+
+</AttributeLayout>
+
+<style>
+  .back-link {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.4rem 0.75rem;
+    background: white;
+    border-radius: 4px;
+    color: var(--color-maroon);
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    transition: all 0.15s;
+  }
+
+  .back-link:hover {
+    background: var(--color-golden);
+    color: white;
+  }
+
+  .sukta-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .sukta-row {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 0.25rem 0;
+    border-bottom: 1px solid #eee;
+  }
+
+  .sukta-row:last-child {
+    border-bottom: none;
+  }
+
+  .sukta-label {
+    min-width: 100px;
+    font-family: 'AdiShilaVedic', serif;
+    color: var(--color-maroon);
+  }
+
+  .sukta-label:hover {
+    color: var(--color-primary);
+  }
+
+  .rik-links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.25rem;
+  }
+
+  .rik-link {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 28px;
+    padding: 0.2rem 0.4rem;
+    background: #f5f5f5;
+    border-radius: 3px;
+    font-size: 0.8rem;
+    color: #666;
+    transition: all 0.15s;
+  }
+
+  .rik-link:hover {
+    background: var(--color-golden);
+    color: white;
+  }
+</style>

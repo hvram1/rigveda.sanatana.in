@@ -1,0 +1,60 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import MandalaCard from '../components/MandalaCard.astro';
+import { getMandalaInfo } from '../lib/utils';
+
+const mandalas = Array.from({ length: 10 }, (_, i) => {
+  const num = i + 1;
+  const info = getMandalaInfo(num);
+  return { number: num, suktaCount: info.suktas.length };
+});
+
+const base = import.meta.env.BASE_URL;
+---
+
+<BaseLayout title="मुख्यपृष्ठम्">
+  <section class="text-center mb-12">
+    <h1 class="text-5xl font-bold text-maroon mb-4">ऋग्वेद</h1>
+    <p class="text-xl text-gray-700 max-w-3xl mx-auto leading-relaxed">
+      The Ṛgvēda is an ancient Indian collection of Vedic Sanskrit hymns. 
+      It contains 1,028 hymns (sūktas) in 10,552 verses, organized into ten books (maṇḍalas).
+    </p>
+  </section>
+
+  <section class="mb-12">
+    <h2 class="text-2xl font-semibold text-terracotta mb-6 text-center">मण्डलवर्गीकरणम्</h2>
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      {mandalas.map(m => (
+        <MandalaCard number={m.number} suktaCount={m.suktaCount} />
+      ))}
+    </div>
+  </section>
+
+  <section class="verse-card text-center">
+    <h2 class="text-xl font-semibold text-terracotta mb-4">अन्य वर्गीकरणम्</h2>
+    <div class="flex flex-wrap justify-center gap-4">
+      <a href={`${base}ashtaka`} class="nav-link bg-amber-50">अष्टकवर्गीकरणम्</a>
+      <a href={`${base}rishi`} class="nav-link bg-amber-50">ऋषयः</a>
+      <a href={`${base}devata`} class="nav-link bg-amber-50">देवताः</a>
+      <a href={`${base}chandas`} class="nav-link bg-amber-50">छन्दांसि</a>
+      <a href={`${base}samanapada`} class="nav-link bg-amber-50">समानपदमन्त्राः</a>
+    </div>
+  </section>
+
+  <section class="verse-card text-center mt-6">
+    <h2 class="text-xl font-semibold text-terracotta mb-4">अनुक्रमणिकाः</h2>
+    <div class="flex flex-wrap justify-center gap-4">
+      <a href={`${base}pada`} class="nav-link bg-amber-50">पदानुक्रमणिका</a>
+      <a href={`${base}mantra`} class="nav-link bg-amber-50">मन्त्रानुक्रमणिका</a>
+      <a href={`${base}search`} class="nav-link bg-amber-50">अन्वेषणम्</a>
+    </div>
+  </section>
+
+  <section class="verse-card text-center mt-6">
+    <h2 class="text-xl font-semibold text-terracotta mb-4">सहायग्रन्थाः</h2>
+    <div class="flex flex-wrap justify-center gap-4">
+      <a href={`${base}brihaddevata`} class="nav-link bg-amber-50">बृहद्देवता</a>
+      <a href={`${base}aitareya`} class="nav-link bg-amber-50">ऐतरेय ब्राह्मणम्</a>
+    </div>
+  </section>
+</BaseLayout>

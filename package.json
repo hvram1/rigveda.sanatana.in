@@ -1,0 +1,16 @@
+{
+  "name": "rigveda-app",
+  "type": "module",
+  "version": "0.0.1",
+  "scripts": {
+    "dev": "astro dev --host",
+    "build:index": "node scripts/generate-search-index.js",
+    "build": "npm run build:index && astro build",
+    "preview": "astro preview",
+    "astro": "astro"
+  },
+  "dependencies": {
+    "astro": "^5.16.15",
+    "fuse.js": "^7.1.0"
+  }
+}

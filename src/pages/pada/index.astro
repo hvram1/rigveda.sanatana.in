@@ -1,0 +1,235 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import padaIndex from '../../data/pada-index.json';
+
+const { totalWords, totalRiks, letters, byLetter } = padaIndex;
+
+// Get word counts per letter
+const letterStats = letters.map(letter => ({
+  letter,
+  count: byLetter[letter]?.length || 0
+})).filter(l => l.letter !== '['); // Remove invalid entries
+---
+
+<BaseLayout title="पदानुक्रमणिका">
+  <div class="pada-container">
+    <header class="page-header">
+      <h1>पदानुक्रमणिका</h1>
+      <p class="subtitle">Word Index (Padānukramaṇikā)</p>
+      <p class="description">
+        All unique words extracted from the Padapāṭha, organized alphabetically.
+        Click on a letter to see all words starting with that letter.
+      </p>
+      <p class="stats">{totalWords.toLocaleString()} पदानि from {totalRiks.toLocaleString()} ऋचः</p>
+    </header>
+
+    <nav class="letter-nav">
+      {letterStats.map(({ letter, count }) => (
+        <a href={`/pada/${encodeURIComponent(letter)}`} class="letter-link">
+          <span class="letter">{letter}</span>
+          <span class="count">{count.toLocaleString()}</span>
+        </a>
+      ))}
+    </nav>
+
+    <section class="preview-section">
+      <h2>प्रथमा दश पदानि (Top 10 Most Frequent Words)</h2>
+      <div class="top-words">
+        {Object.values(byLetter)
+          .flat()
+          .sort((a: any, b: any) => b.count - a.count)
+          .slice(0, 10)
+          .map((entry: any, i: number) => (
+            <a href={`/pada/${encodeURIComponent(entry.word[0])}#${entry.word}`} class="top-word">
+              <span class="rank">{i + 1}</span>
+              <span class="word">{entry.word}</span>
+              <span class="freq">{entry.count} occurrences</span>
+            </a>
+          ))
+        }
+      </div>
+    </section>
+
+    <div class="back-link">
+      <a href="/">← मुख्यपृष्ठम्</a>
+    </div>
+  </div>
+</BaseLayout>
+
+<style>
+  .pada-container {
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 2rem;
+  }
+
+  .page-header {
+    text-align: center;
+    margin-bottom: 2rem;
+  }
+
+  .page-header h1 {
+    font-family: 'AdiShilaVedic', serif;
+    font-size: 2.5rem;
+    color: var(--color-maroon);
+    margin-bottom: 0.5rem;
+  }
+
+  .subtitle {
+    color: var(--color-text-light);
+    font-size: 1.1rem;
+    margin-bottom: 1rem;
+  }
+
+  .description {
+    max-width: 600px;
+    margin: 0 auto 1rem;
+    color: var(--color-text);
+    line-height: 1.6;
+  }
+
+  .stats {
+    font-family: 'AdiShilaVedic', serif;
+    color: var(--color-golden);
+    font-size: 1.2rem;
+  }
+
+  .letter-nav {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 0.5rem;
+    margin-bottom: 2rem;
+    padding: 1.5rem;
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  }
+
+  .letter-link {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 0.75rem 1rem;
+    background: #f8f8f8;
+    border-radius: 8px;
+    text-decoration: none;
+    transition: all 0.2s;
+    min-width: 60px;
+  }
+
+  .letter-link:hover {
+    background: var(--color-golden);
+    transform: translateY(-2px);
+  }
+
+  .letter-link:hover .letter {
+    color: white;
+  }
+
+  .letter-link:hover .count {
+    color: rgba(255,255,255,0.9);
+  }
+
+  .letter {
+    font-family: 'AdiShilaVedic', serif;
+    font-size: 1.5rem;
+    color: var(--color-maroon);
+    font-weight: bold;
+  }
+
+  .count {
+    font-size: 0.75rem;
+    color: var(--color-text-light);
+  }
+
+  .preview-section {
+    background: white;
+    padding: 1.5rem;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    margin-bottom: 2rem;
+  }
+
+  .preview-section h2 {
+    font-family: 'AdiShilaVedic', serif;
+    font-size: 1.3rem;
+    color: var(--color-maroon);
+    margin-bottom: 1rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 2px solid var(--color-golden);
+  }
+
+  .top-words {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .top-word {
+    display: flex;
+    align-items: center;
+    padding: 0.75rem 1rem;
+    background: #f9f9f9;
+    border-radius: 6px;
+    text-decoration: none;
+    transition: all 0.2s;
+  }
+
+  .top-word:hover {
+    background: #fff9f0;
+    padding-left: 1.5rem;
+  }
+
+  .rank {
+    font-weight: bold;
+    color: var(--color-golden);
+    min-width: 2rem;
+  }
+
+  .word {
+    font-family: 'AdiShilaVedic', serif;
+    font-size: 1.2rem;
+    color: var(--color-maroon);
+    flex: 1;
+  }
+
+  .freq {
+    font-size: 0.85rem;
+    color: var(--color-text-light);
+  }
+
+  .back-link {
+    text-align: center;
+  }
+
+  .back-link a {
+    font-family: 'AdiShilaVedic', serif;
+    color: var(--color-maroon);
+    text-decoration: none;
+    font-size: 1.1rem;
+  }
+
+  .back-link a:hover {
+    color: var(--color-golden);
+  }
+
+  @media (max-width: 768px) {
+    .pada-container {
+      padding: 1rem;
+    }
+
+    .page-header h1 {
+      font-size: 1.8rem;
+    }
+
+    .letter-link {
+      padding: 0.5rem 0.75rem;
+      min-width: 50px;
+    }
+
+    .letter {
+      font-size: 1.2rem;
+    }
+  }
+</style>

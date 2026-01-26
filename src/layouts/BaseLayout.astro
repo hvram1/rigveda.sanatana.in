@@ -1,0 +1,68 @@
+---
+interface Props {
+  title: string;
+  description?: string;
+}
+
+const { title, description = 'ऋग्वेद - The ancient collection of Vedic Sanskrit hymns' } = Astro.props;
+const base = import.meta.env.BASE_URL;
+---
+
+<!DOCTYPE html>
+<html lang="sa">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content={description} />
+    <title>{title} | ऋग्वेद</title>
+    <link rel="icon" type="image/png" href={`${base}images/favicon.png`} />
+    <style set:html={`
+      @font-face {
+        font-family: 'AdiShilaVedic';
+        src: url('${base}fonts/AdishilaVedic.ttf') format('truetype');
+        font-weight: normal;
+        font-style: normal;
+      }
+      @font-face {
+        font-family: 'AdiShilaVedic';
+        src: url('${base}fonts/AdishilaVedicBold.ttf') format('truetype');
+        font-weight: bold;
+        font-style: normal;
+      }
+    `}></style>
+  </head>
+  <body class="min-h-screen">
+    <!-- Header banner with background image -->
+    <div class="header-banner" style={`background-image: url('${base}images/bg_head.jpg');`}>
+      <div class="header-content">
+        <a href={base}>
+          <img src={`${base}images/logo-circle.png`} alt="ऋग्वेद" class="header-logo" />
+        </a>
+        <h1 class="header-title">ऋग्वेद</h1>
+        <p class="header-tagline">Ṛgvēda - The Ancient Vedic Hymns</p>
+      </div>
+    </div>
+
+    <!-- Navigation bar -->
+    <nav class="navbar sticky top-0 z-50">
+      <div class="max-w-6xl mx-auto px-4 py-3 flex items-center justify-center gap-4">
+        <a href={base} class="nav-link">मुख्यपृष्ठम्</a>
+        <a href={`${base}sukta/1/1`} class="nav-link">मण्डलानि</a>
+        <a href={`${base}search`} class="nav-link">अन्वेषणम्</a>
+      </div>
+    </nav>
+
+    <main class="max-w-6xl mx-auto px-4 py-8">
+      <slot />
+    </main>
+
+    <footer class="mt-auto py-6 text-center text-sm text-gray-600 border-t border-amber-200">
+      <p>ऋग्वेद - Preserving ancient wisdom</p>
+      <p class="mt-2"><a href={`${base}docs`} class="text-terracotta hover:underline">Documentation & Features</a></p>
+    </footer>
+  </body>
+</html>
+
+<style is:global>
+  @import '../styles/global.css';
+</style>

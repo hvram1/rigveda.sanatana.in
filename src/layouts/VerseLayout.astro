@@ -1,0 +1,160 @@
+---
+import Sidebar from '../components/Sidebar.astro';
+
+interface Props {
+  title: string;
+  description?: string;
+  currentMandala?: number;
+  currentSukta?: number;
+  currentRik?: number;
+}
+
+const { 
+  title, 
+  description = 'ऋग्वेद - The ancient collection of Vedic Sanskrit hymns',
+  currentMandala = 1,
+  currentSukta,
+  currentRik
+} = Astro.props;
+const base = import.meta.env.BASE_URL;
+---
+
+<!DOCTYPE html>
+<html lang="sa">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content={description} />
+    <title>{title} | ऋग्वेद</title>
+    <link rel="icon" type="image/png" href={`${base}images/favicon.png`} />
+    <style set:html={`
+      @font-face {
+        font-family: 'AdiShilaVedic';
+        src: url('${base}fonts/AdishilaVedic.ttf') format('truetype');
+        font-weight: normal;
+        font-style: normal;
+      }
+      @font-face {
+        font-family: 'AdiShilaVedic';
+        src: url('${base}fonts/AdishilaVedicBold.ttf') format('truetype');
+        font-weight: bold;
+        font-style: normal;
+      }
+    `}></style>
+  </head>
+  <body>
+    <!-- Compact header for verse pages -->
+    <header class="verse-header">
+      <div class="verse-header-content">
+        <a href={base} class="verse-header-logo">
+          <img src={`${base}images/logo-circle.png`} alt="ऋग्वेद" />
+          <span>ऋग्वेद</span>
+        </a>
+        <nav class="verse-header-nav">
+          <a href={base} class="nav-link">मुख्यपृष्ठम्</a>
+          <a href={`${base}search`} class="nav-link">अन्वेषणम्</a>
+        </nav>
+      </div>
+    </header>
+
+    <div class="verse-layout">
+      <Sidebar 
+        currentMandala={currentMandala} 
+        currentSukta={currentSukta} 
+        currentRik={currentRik} 
+      />
+      
+      <main class="verse-main">
+        <slot />
+      </main>
+    </div>
+  </body>
+</html>
+
+<style is:global>
+  @import '../styles/global.css';
+  
+  .verse-header {
+    background: #fff;
+    border-bottom: 1px solid #ddd;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+
+  .verse-header-content {
+    max-width: 100%;
+    margin: 0 auto;
+    padding: 0.5rem 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .verse-header-logo {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--color-maroon);
+    font-family: 'AdiShilaVedic', serif;
+    font-size: 1.25rem;
+    font-weight: 700;
+  }
+
+  .verse-header-logo img {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+  }
+
+  .verse-header-logo:hover {
+    color: var(--color-primary);
+  }
+
+  .verse-header-nav {
+    display: flex;
+    gap: 0.5rem;
+  }
+
+  .verse-layout {
+    display: flex;
+    min-height: calc(100vh - 60px);
+  }
+
+  .verse-main {
+    flex: 1;
+    padding: 1.5rem;
+    overflow-y: auto;
+    background: var(--color-bg);
+  }
+
+  /* Mobile styles */
+  @media (max-width: 768px) {
+    .verse-header-content {
+      padding: 0.5rem;
+    }
+
+    .verse-header-logo span {
+      display: none;
+    }
+
+    .verse-header-logo img {
+      width: 32px;
+      height: 32px;
+    }
+
+    .verse-header-nav .nav-link {
+      padding: 0.5rem;
+      font-size: 0.85rem;
+    }
+
+    .verse-layout {
+      display: block;
+    }
+
+    .verse-main {
+      padding: 1rem;
+      padding-bottom: 80px; /* Space for floating menu button */
+    }
+  }
+</style>
