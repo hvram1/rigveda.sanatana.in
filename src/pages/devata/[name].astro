@@ -1,29 +1,28 @@
 ---
 import AttributeLayout from '../../layouts/AttributeLayout.astro';
-import { getAttributeIndex, getVersesByAttribute, MANDALA_NAMES } from '../../lib/utils';
+import { getAttributeIndex, getVersesByAttribute, MANDALA_NAMES, createSlug } from '../../lib/utils';
 
 export function getStaticPaths() {
   const devatas = getAttributeIndex('devata');
   return devatas.map(d => ({
-    params: { name: d.name },
+    params: { name: createSlug(d.name) },
     props: { devata: d }
   }));
 }
 
-const { name } = Astro.params;
 const { devata } = Astro.props;
-const versesByMandala = getVersesByAttribute('devata', name);
+const versesByMandala = getVersesByAttribute('devata', devata.name);
 const base = import.meta.env.BASE_URL;
 ---
 
-<AttributeLayout title={`देवता - ${name}`}>
+<AttributeLayout title={`देवता - ${devata.name}`}>
   <nav class="mb-4 text-sm">
     <a href={`${base}devata`} class="back-link">← सर्वे देवताः</a>
   </nav>
 
   <header class="mb-6 verse-card">
     <div class="text-sm text-gray-500 mb-1">देवता</div>
-    <h1 class="text-2xl font-bold text-maroon mb-2">{name}</h1>
+    <h1 class="text-2xl font-bold text-maroon mb-2">{devata.name}</h1>
     <p class="text-gray-600">{devata.count} ऋचः</p>
   </header>
 

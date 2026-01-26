@@ -1,8 +1,9 @@
 ---
 import AttributeLayout from '../../layouts/AttributeLayout.astro';
-import { getAttributeIndex } from '../../lib/utils';
+import { getAttributeIndex, createSlug } from '../../lib/utils';
 
 const devatas = getAttributeIndex('devata');
+const base = import.meta.env.BASE_URL;
 const totalVerses = devatas.reduce((sum, d) => sum + d.count, 0);
 
 // Top devatas by verse count
@@ -34,7 +35,7 @@ const sortedLetters = Array.from(letterGroups.keys()).sort((a, b) => a.localeCom
     <div class="top-grid">
       {topDevatas.map((devata, i) => (
         <a 
-          href={`/devata/${encodeURIComponent(devata.name)}`}
+          href={`${base}devata/${createSlug(devata.name)}`}
           class="top-item"
         >
           <span class="top-rank">{i + 1}</span>
@@ -66,7 +67,7 @@ const sortedLetters = Array.from(letterGroups.keys()).sort((a, b) => a.localeCom
         <div class="attr-grid">
           {letterGroups.get(letter)!.map(devata => (
             <a 
-              href={`/devata/${encodeURIComponent(devata.name)}`}
+              href={`${base}devata/${createSlug(devata.name)}`}
               class="attr-item"
             >
               <span class="attr-name">{devata.name}</span>

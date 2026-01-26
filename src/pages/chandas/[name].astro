@@ -1,29 +1,28 @@
 ---
 import AttributeLayout from '../../layouts/AttributeLayout.astro';
-import { getAttributeIndex, getVersesByAttribute, MANDALA_NAMES } from '../../lib/utils';
+import { getAttributeIndex, getVersesByAttribute, MANDALA_NAMES, createSlug } from '../../lib/utils';
 
 export function getStaticPaths() {
   const chandasList = getAttributeIndex('chandas');
   return chandasList.map(c => ({
-    params: { name: c.name },
+    params: { name: createSlug(c.name) },
     props: { chandas: c }
   }));
 }
 
-const { name } = Astro.params;
 const { chandas } = Astro.props;
-const versesByMandala = getVersesByAttribute('chandas', name);
+const versesByMandala = getVersesByAttribute('chandas', chandas.name);
 const base = import.meta.env.BASE_URL;
 ---
 
-<AttributeLayout title={`छन्दः - ${name}`}>
+<AttributeLayout title={`छन्दः - ${chandas.name}`}>
   <nav class="mb-4 text-sm">
     <a href={`${base}chandas`} class="back-link">← सर्वाणि छन्दांसि</a>
   </nav>
 
   <header class="mb-6 verse-card">
     <div class="text-sm text-gray-500 mb-1">छन्दः</div>
-    <h1 class="text-2xl font-bold text-maroon mb-2">{name}</h1>
+    <h1 class="text-2xl font-bold text-maroon mb-2">{chandas.name}</h1>
     <p class="text-gray-600">{chandas.count} ऋचः</p>
   </header>
 

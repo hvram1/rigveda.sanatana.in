@@ -1,8 +1,9 @@
 ---
 import AttributeLayout from '../../layouts/AttributeLayout.astro';
-import { getAttributeIndex } from '../../lib/utils';
+import { getAttributeIndex, createSlug } from '../../lib/utils';
 
 const chandasList = getAttributeIndex('chandas');
+const base = import.meta.env.BASE_URL;
 const totalVerses = chandasList.reduce((sum, c) => sum + c.count, 0);
 
 // Sort by verse count (most used first)
@@ -19,7 +20,7 @@ const sortedByCount = [...chandasList].sort((a, b) => b.count - a.count);
     <div class="chandas-grid">
       {sortedByCount.map((chandas, i) => (
         <a 
-          href={`/chandas/${encodeURIComponent(chandas.name)}`}
+          href={`${base}chandas/${createSlug(chandas.name)}`}
           class="chandas-item"
         >
           <span class="chandas-rank">{i + 1}</span>

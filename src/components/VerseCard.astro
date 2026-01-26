@@ -1,5 +1,5 @@
 ---
-import { parseSvara, isSamanapada, type RikData } from '../lib/utils';
+import { parseSvara, isSamanapada, createSlug, type RikData } from '../lib/utils';
 
 interface Props {
   rik: RikData;
@@ -60,19 +60,19 @@ const base = import.meta.env.BASE_URL;
   <footer class="mt-4 pt-4 border-t border-amber-100 flex flex-wrap gap-4 text-sm">
     <div>
       <span class="text-gray-500">ऋषिः:</span>
-      <a href={`${base}rishi/${encodeURIComponent(rik.attribute.rishi)}`} class="ml-1 text-terracotta hover:underline">
+      <a href={`${base}rishi/${createSlug(rik.attribute.rishi)}`} class="ml-1 text-terracotta hover:underline">
         {rik.attribute.rishi}
       </a>
     </div>
     <div>
       <span class="text-gray-500">देवता:</span>
-      <a href={`${base}devata/${encodeURIComponent(rik.attribute.devata)}`} class="ml-1 text-terracotta hover:underline">
+      <a href={`${base}devata/${createSlug(rik.attribute.devata)}`} class="ml-1 text-terracotta hover:underline">
         {rik.attribute.devata}
       </a>
     </div>
     <div>
       <span class="text-gray-500">छन्दः:</span>
-      <a href={`${base}chandas/${encodeURIComponent(rik.attribute.chandas)}`} class="ml-1 text-terracotta hover:underline">
+      <a href={`${base}chandas/${createSlug(rik.attribute.chandas)}`} class="ml-1 text-terracotta hover:underline">
         {rik.attribute.chandas}
       </a>
     </div>

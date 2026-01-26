@@ -40,6 +40,24 @@ export function formatVerseId(mandala: number, sukta: number, rik: number): stri
   return `${mandala}.${sukta}.${rik}`;
 }
 
+// Create a URL-safe slug from Sanskrit text
+// Uses hash only to ensure filesystem compatibility (255 char limit)
+export function createSlug(name: string): string {
+  // Use hash-only approach - encoded Sanskrit is too long for filesystems
+  return simpleHash(name);
+}
+
+// Simple hash function for creating unique identifiers
+function simpleHash(str: string): string {
+  let hash = 0;
+  for (let i = 0; i < str.length; i++) {
+    const char = str.charCodeAt(i);
+    hash = ((hash << 5) - hash) + char;
+    hash = hash & hash; // Convert to 32-bit integer
+  }
+  return Math.abs(hash).toString(36);
+}
+
 export function padNumber(n: number, width: number = 3): string {
   return String(n).padStart(width, '0');
 }

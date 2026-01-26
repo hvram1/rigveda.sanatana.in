@@ -1,8 +1,9 @@
 ---
 import AttributeLayout from '../../layouts/AttributeLayout.astro';
-import { getAttributeIndex } from '../../lib/utils';
+import { getAttributeIndex, createSlug } from '../../lib/utils';
 
 const rishis = getAttributeIndex('rishi');
+const base = import.meta.env.BASE_URL;
 const totalVerses = rishis.reduce((sum, r) => sum + r.count, 0);
 
 // Top rishis by verse count
@@ -34,7 +35,7 @@ const sortedLetters = Array.from(letterGroups.keys()).sort((a, b) => a.localeCom
     <div class="top-rishis-grid">
       {topRishis.map((rishi, i) => (
         <a 
-          href={`/rishi/${encodeURIComponent(rishi.name)}`}
+          href={`${base}rishi/${createSlug(rishi.name)}`}
           class="top-rishi-item"
         >
           <span class="top-rishi-rank">{i + 1}</span>
@@ -66,7 +67,7 @@ const sortedLetters = Array.from(letterGroups.keys()).sort((a, b) => a.localeCom
         <div class="attr-grid">
           {letterGroups.get(letter)!.map(rishi => (
             <a 
-              href={`/rishi/${encodeURIComponent(rishi.name)}`}
+              href={`${base}rishi/${createSlug(rishi.name)}`}
               class="attr-item"
             >
               <span class="attr-name">{rishi.name}</span>
