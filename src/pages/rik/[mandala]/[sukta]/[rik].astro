@@ -2,8 +2,9 @@
 import VerseLayout from '../../../../layouts/VerseLayout.astro';
 import VerseCard from '../../../../components/VerseCard.astro';
 import AudioPlayer from '../../../../components/AudioPlayer.astro';
-import { loadRik, MANDALA_NAMES, padNumber } from '../../../../lib/utils';
-import { getAudioUrl } from '../../../../lib/config';
+import SvaranugamiOverlay from '../../../../components/SvaranugamiOverlay.astro';
+import { loadRik, MANDALA_NAMES, padNumber, loadSuktaSyncData } from '../../../../lib/utils';
+import { getAudioUrl, FEATURES } from '../../../../lib/config';
 import fs from 'fs';
 import path from 'path';
 
@@ -43,6 +44,13 @@ const rikNum = parseInt(rikParam, 10);
 
 const rikData = await loadRik(mandalaNum, suktaNum, rikNum);
 const audioUrl = getAudioUrl(mandalaNum, suktaNum, rikNum);
+
+// Load sync data for this single rik (filter from sukta sync data)
+let svaranugamiVerses: any[] = [];
+if (rikData) {
+  const suktaSyncData = loadSuktaSyncData(mandalaNum, suktaNum, [rikData]);
+  svaranugamiVerses = suktaSyncData.filter(v => v.rik === rikNum);
+}
 ---
 
 <VerseLayout 
@@ -53,9 +61,19 @@ const audioUrl = getAudioUrl(mandalaNum, suktaNum, rikNum);
 >
   {rikData ? (
     <>
+      <div class="player-row mb-6">
+        <AudioPlayer src={audioUrl} />
+        
+        {FEATURES.svaranugami && svaranugamiVerses.length > 0 && (
+          <SvaranugamiOverlay 
+            verses={svaranugamiVerses} 
+            level="rik" 
+            title={`ऋक् ${mandala}.${sukta}.${rikParam} - स्वरानुगामी`}
+          />
+        )}
+      </div>
+
       <VerseCard rik={rikData} showDetails={true} />
-      
-      <AudioPlayer src={audioUrl} />
 
       <aside class="mt-6 verse-card">
         <h3 class="font-semibold text-terracotta mb-3">वर्गीकरणम्</h3>
@@ -87,3 +105,27 @@ const audioUrl = getAudioUrl(mandalaNum, suktaNum, rikNum);
     </div>
   )}
 </VerseLayout>
+
+<style>
+  .player-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+    flex-wrap: wrap;
+  }
+  
+  .player-row > :first-child {
+    flex: 1;
+    min-width: 250px;
+  }
+  
+  @media (max-width: 768px) {
+    .player-row {
+      flex-direction: column;
+    }
+    
+    .player-row > :first-child {
+      width: 100%;
+    }
+  }
+</style>
