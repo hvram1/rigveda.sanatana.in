@@ -1,0 +1,17 @@
+{
+  "total_verses": 10552,
+  "with_aeneas": 10551,
+  "fallback": 1,
+  "suktas": 1028,
+  "post_processing": {
+    "svara_weights": {
+      "{1}": 1.0,
+      "{2}": 1.4,
+      "{5}": 1.1,
+      "{0}": 1.0,
+      "{4}": 1.0
+    },
+    "aeneas_blend": 0.7,
+    "linguistic_blend": 0.3
+  }
+}

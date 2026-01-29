@@ -2,8 +2,9 @@
 import VerseLayout from '../../../layouts/VerseLayout.astro';
 import VerseCard from '../../../components/VerseCard.astro';
 import PlaylistPlayer from '../../../components/PlaylistPlayer.astro';
-import { getSuktaRiks, getMandalaInfo, MANDALA_NAMES, padNumber } from '../../../lib/utils';
-import { getAudioUrl } from '../../../lib/config';
+import SvaranugamiOverlay from '../../../components/SvaranugamiOverlay.astro';
+import { getSuktaRiks, getMandalaInfo, MANDALA_NAMES, padNumber, loadSuktaSyncData } from '../../../lib/utils';
+import { getAudioUrl, FEATURES } from '../../../lib/config';
 import fs from 'fs';
 import path from 'path';
 
@@ -38,6 +39,9 @@ const tracks = riks.map(rik => ({
   label: rik.id,
   src: getAudioUrl(mandalaNum, suktaNum, parseInt(rik.classification.rik, 10))
 }));
+
+// Load pre-computed sync data for Svaranugami overlay (with timing)
+const svaranugamiVerses = loadSuktaSyncData(mandalaNum, suktaNum, riks);
 ---
 
 <VerseLayout 
@@ -59,7 +63,17 @@ const tracks = riks.map(rik => ({
     )}
   </header>
 
-  <PlaylistPlayer tracks={tracks} title={`सूक्तम् ${mandala}.${sukta} - सम्पूर्णम्`} />
+  <div class="player-row">
+    <PlaylistPlayer tracks={tracks} title={`सूक्तम् ${mandala}.${sukta} - सम्पूर्णम्`} />
+    
+    {FEATURES.svaranugami && (
+      <SvaranugamiOverlay 
+        verses={svaranugamiVerses} 
+        level="sukta" 
+        title={`सूक्तम् ${mandala}.${sukta} - स्वरानुगामी`}
+      />
+    )}
+  </div>
 
   <div class="space-y-6">
     {riks.map((rik) => (
@@ -67,3 +81,28 @@ const tracks = riks.map(rik => ({
     ))}
   </div>
 </VerseLayout>
+
+<style>
+  .player-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+    flex-wrap: wrap;
+  }
+  
+  .player-row > :first-child {
+    flex: 1;
+    min-width: 300px;
+  }
+  
+  @media (max-width: 768px) {
+    .player-row {
+      flex-direction: column;
+    }
+    
+    .player-row > :first-child {
+      width: 100%;
+    }
+  }
+</style>

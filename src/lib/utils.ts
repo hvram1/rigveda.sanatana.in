@@ -250,3 +250,78 @@ export function getSamanapadaByMandala(): Map<number, { sukta: number; rik: numb
   
   return grouped;
 }
+
+// =====================
+// Svaranugami Helpers
+// =====================
+
+export interface SvaranugamiPada {
+  text: string;
+  begin: number;
+  end: number;
+}
+
+export interface SvaranugamiVerse {
+  id: string;
+  mandala: number;
+  sukta: number;
+  rik: number;
+  padas: SvaranugamiPada[];
+}
+
+/**
+ * Extract padas from a RikData object for Svaranugami player
+ * Uses samhitaAux lines which have natural pada breaks
+ */
+export function extractPadas(rik: RikData): SvaranugamiVerse {
+  const lines = Array.isArray(rik.samhitaAux.lines) 
+    ? rik.samhitaAux.lines 
+    : [rik.samhitaAux.lines];
+  
+  const padas: SvaranugamiPada[] = lines.map(line => ({
+    text: parseSvara(line),
+    begin: 0, // Will be initialized by player based on audio duration
+    end: 0
+  }));
+  
+  return {
+    id: rik.id,
+    mandala: parseInt(rik.classification.mandala),
+    sukta: parseInt(rik.classification.sukta),
+    rik: parseInt(rik.classification.rik),
+    padas
+  };
+}
+
+/**
+ * Convert array of RikData to Svaranugami format (fallback if no sync data)
+ */
+export function riksToSvaranugami(riks: RikData[]): SvaranugamiVerse[] {
+  return riks.map(extractPadas);
+}
+
+/**
+ * Load pre-computed sync data for a sukta from the sync directory.
+ * Falls back to extractPadas if sync file doesn't exist.
+ */
+export function loadSuktaSyncData(mandala: number, sukta: number, riks: RikData[]): SvaranugamiVerse[] {
+  const syncPath = path.join(
+    process.cwd(), 
+    'src/data/sync', 
+    padNumber(mandala), 
+    `${padNumber(sukta)}.json`
+  );
+  
+  try {
+    if (fs.existsSync(syncPath)) {
+      const syncData = JSON.parse(fs.readFileSync(syncPath, 'utf-8'));
+      // Return the verses array from the sync file
+      return syncData.verses as SvaranugamiVerse[];
+    }
+  } catch (e) {
+    console.warn(`Could not load sync data for ${mandala}.${sukta}:`, e);
+  }
+  
+  // Fallback to generating from riks (no timing data)
+  return riksToSvaranugami(riks);
+}

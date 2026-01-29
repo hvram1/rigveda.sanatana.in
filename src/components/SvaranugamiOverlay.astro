@@ -1,0 +1,726 @@
+---
+/**
+ * SvaranugamiOverlay - Synced audio-text player overlay
+ * 
+ * Reusable component for Rigveda (and later Yajurveda)
+ * Works at rik, sukta, or mandala level
+ * 
+ * Usage:
+ *   <SvaranugamiOverlay verses={verses} level="sukta" />
+ */
+
+import { FEATURES, getAudioUrl, getSyncIssueUrl } from '../lib/config';
+
+interface Pada {
+  text: string;
+  begin: number;
+  end: number;
+}
+
+interface Verse {
+  id: string;
+  mandala: number;
+  sukta: number;
+  rik: number;
+  padas: Pada[];
+}
+
+interface Props {
+  verses: Verse[];
+  level: 'rik' | 'sukta' | 'mandala';
+  title?: string;
+}
+
+const { verses, level, title } = Astro.props;
+const showReportButton = FEATURES.syncReportButton;
+
+// Serialize verses for client-side use
+const versesJson = JSON.stringify(verses);
+---
+
+{FEATURES.svaranugami && (
+  <div id="svaranugami-trigger">
+    <button class="svaranugami-btn" onclick="openSvaranugami()">
+      <span class="btn-icon">🎵</span>
+      <span class="btn-text">स्वरानुगामी</span>
+    </button>
+  </div>
+
+  <div id="svaranugami-overlay" class="overlay hidden">
+    <div class="overlay-backdrop" onclick="closeSvaranugami()"></div>
+    <div class="overlay-content">
+      <header class="overlay-header">
+        <h2>{title || 'स्वरानुगामी'}</h2>
+        <button class="close-btn" onclick="closeSvaranugami()">✕</button>
+      </header>
+
+      <div class="player-controls">
+        <button class="play-btn" id="svPlayPauseBtn" onclick="svTogglePlayPause()">▶</button>
+        
+        <div class="progress-container">
+          <div class="progress-bar" id="svProgressBar" onclick="svSeekToPosition(event)">
+            <div class="progress-fill" id="svProgressFill"></div>
+          </div>
+          <div class="progress-info">
+            <span id="svCurrentTime">0:00</span>
+            <span id="svTotalTime">0:00</span>
+          </div>
+        </div>
+
+        <div class="nav-btns">
+          <button class="nav-btn" onclick="svPrevVerse()" title="Previous">⏮</button>
+          <button class="nav-btn" onclick="svNextVerse()" title="Next">⏭</button>
+          <button class="nav-btn" onclick="svStop()" title="Stop">⏹</button>
+        </div>
+
+        <div class="track-info" id="svTrackInfo">ऋक् 1/{verses.length}</div>
+      </div>
+
+      <div class="verse-list" id="svVerseList">
+        <!-- Rendered by JS -->
+      </div>
+
+      {showReportButton && (
+        <div class="report-section">
+          <button class="report-btn" onclick="svReportIssue()">
+            ⚠️ Report Timing Issue
+          </button>
+        </div>
+      )}
+
+      <audio id="svAudioPlayer"></audio>
+    </div>
+  </div>
+)}
+
+<script define:vars={{ versesJson, showReportButton }}>
+  // Parse verses from server
+  const svVerses = JSON.parse(versesJson);
+  
+  // State
+  let svCurrentVerseIndex = 0;
+  let svIsPlaying = false;
+  let svTotalDuration = 0;
+  let svVerseDurations = [];
+  let svInitialized = false;
+
+  // Open overlay
+  window.openSvaranugami = function() {
+    document.getElementById('svaranugami-overlay').classList.remove('hidden');
+    document.body.style.overflow = 'hidden';
+    if (!svInitialized) {
+      svInitialize();
+    }
+  };
+
+  // Close overlay
+  window.closeSvaranugami = function() {
+    document.getElementById('svaranugami-overlay').classList.add('hidden');
+    document.body.style.overflow = '';
+    svStop();
+  };
+
+  // Initialize player
+  async function svInitialize() {
+    svInitialized = true;
+    
+    // Pre-load audio durations and initialize pada timing
+    svTotalDuration = 0;
+    svVerseDurations = [];
+    
+    for (const verse of svVerses) {
+      // Check if we have pre-computed timing data
+      const hasPrecomputedTiming = verse.padas.length > 0 && verse.padas[verse.padas.length - 1].end > 0;
+      
+      let duration;
+      if (hasPrecomputedTiming) {
+        // Use the last pada's end time as verse duration
+        duration = verse.padas[verse.padas.length - 1].end;
+      } else {
+        // Fallback: load from audio and split evenly
+        duration = await svGetAudioDuration(verse);
+        const segmentDuration = duration / verse.padas.length;
+        verse.padas.forEach((pada, i) => {
+          pada.begin = i * segmentDuration;
+          pada.end = (i + 1) * segmentDuration;
+        });
+      }
+      
+      svVerseDurations.push(duration);
+      svTotalDuration += duration;
+    }
+    
+    svRenderVerseList();
+    svUpdateTotalTime();
+    
+    // Apply initial highlighting (verse 0, time 0)
+    svUpdateHighlighting(0, 0);
+  }
+
+  // Get audio duration for a verse
+  function svGetAudioDuration(verse) {
+    return new Promise((resolve) => {
+      const audio = new Audio(svGetAudioUrl(verse));
+      audio.addEventListener('loadedmetadata', () => resolve(audio.duration));
+      audio.addEventListener('error', () => resolve(10)); // Default fallback
+    });
+  }
+
+  // Get audio URL for a verse
+  function svGetAudioUrl(verse) {
+    const m = String(verse.mandala).padStart(3, '0');
+    const s = String(verse.sukta).padStart(3, '0');
+    const r = String(verse.rik).padStart(3, '0');
+    return `https://rigveda-audio.rigveda.workers.dev/${m}/${s}/${r}.mp3`;
+  }
+
+  // Render verse list
+  function svRenderVerseList() {
+    const container = document.getElementById('svVerseList');
+    container.innerHTML = svVerses.map((verse, i) => `
+      <div class="sv-verse-card" id="sv-verse-${i}" data-index="${i}">
+        <div class="sv-verse-header">
+          <span class="sv-verse-number">${verse.id}</span>
+          <button class="sv-verse-play-btn" onclick="svPlayFromVerse(${i})">▶</button>
+        </div>
+        <div class="sv-padas">
+          ${verse.padas.map((pada, j) => `
+            <div class="sv-pada" data-verse="${i}" data-pada="${j}">${pada.text}</div>
+          `).join('')}
+        </div>
+      </div>
+    `).join('');
+  }
+
+  // Toggle play/pause
+  window.svTogglePlayPause = function() {
+    const audio = document.getElementById('svAudioPlayer');
+    
+    if (svIsPlaying) {
+      audio.pause();
+      svIsPlaying = false;
+      document.getElementById('svPlayPauseBtn').textContent = '▶';
+    } else {
+      if (!audio.src || audio.ended) {
+        svPlayFromVerse(svCurrentVerseIndex);
+      } else {
+        audio.play();
+      }
+      svIsPlaying = true;
+      document.getElementById('svPlayPauseBtn').textContent = '⏸';
+    }
+  };
+
+  // Play from specific verse
+  window.svPlayFromVerse = function(index) {
+    svCurrentVerseIndex = index;
+    const verse = svVerses[index];
+    const audio = document.getElementById('svAudioPlayer');
+    
+    audio.src = svGetAudioUrl(verse);
+    audio.play();
+    svIsPlaying = true;
+    document.getElementById('svPlayPauseBtn').textContent = '⏸';
+    
+    svUpdateTrackInfo();
+    svScrollToVerse(index);
+  };
+
+  // Previous verse
+  window.svPrevVerse = function() {
+    if (svCurrentVerseIndex > 0) {
+      svPlayFromVerse(svCurrentVerseIndex - 1);
+    }
+  };
+
+  // Next verse
+  window.svNextVerse = function() {
+    if (svCurrentVerseIndex < svVerses.length - 1) {
+      svPlayFromVerse(svCurrentVerseIndex + 1);
+    }
+  };
+
+  // Stop playback
+  window.svStop = function() {
+    const audio = document.getElementById('svAudioPlayer');
+    if (audio) {
+      audio.pause();
+      audio.currentTime = 0;
+    }
+    svIsPlaying = false;
+    svCurrentVerseIndex = 0;
+    
+    const playBtn = document.getElementById('svPlayPauseBtn');
+    if (playBtn) playBtn.textContent = '▶';
+    
+    // Reset highlighting
+    document.querySelectorAll('.sv-verse-card').forEach(card => {
+      card.classList.remove('playing', 'completed');
+    });
+    document.querySelectorAll('.sv-pada').forEach(el => {
+      el.classList.remove('active', 'past');
+    });
+    
+    svUpdateTrackInfo();
+    svUpdateProgress(0);
+  };
+
+  // Scroll to verse
+  function svScrollToVerse(index) {
+    const card = document.getElementById(`sv-verse-${index}`);
+    if (card) {
+      card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+  }
+
+  // Update track info
+  function svUpdateTrackInfo() {
+    const el = document.getElementById('svTrackInfo');
+    if (el) el.textContent = `ऋक् ${svCurrentVerseIndex + 1}/${svVerses.length}`;
+  }
+
+  // Update total time
+  function svUpdateTotalTime() {
+    const mins = Math.floor(svTotalDuration / 60);
+    const secs = Math.floor(svTotalDuration % 60);
+    const el = document.getElementById('svTotalTime');
+    if (el) el.textContent = `${mins}:${secs.toString().padStart(2, '0')}`;
+  }
+
+  // Update progress bar
+  function svUpdateProgress(currentTime) {
+    let elapsed = 0;
+    for (let i = 0; i < svCurrentVerseIndex; i++) {
+      elapsed += svVerseDurations[i];
+    }
+    elapsed += currentTime;
+    
+    const percent = svTotalDuration > 0 ? (elapsed / svTotalDuration) * 100 : 0;
+    const fillEl = document.getElementById('svProgressFill');
+    if (fillEl) fillEl.style.width = `${percent}%`;
+    
+    const mins = Math.floor(elapsed / 60);
+    const secs = Math.floor(elapsed % 60);
+    const timeEl = document.getElementById('svCurrentTime');
+    if (timeEl) timeEl.textContent = `${mins}:${secs.toString().padStart(2, '0')}`;
+  }
+
+  // Seek to position
+  window.svSeekToPosition = function(event) {
+    const bar = document.getElementById('svProgressBar');
+    const rect = bar.getBoundingClientRect();
+    const percent = (event.clientX - rect.left) / rect.width;
+    const targetTime = percent * svTotalDuration;
+    
+    let accumulated = 0;
+    for (let i = 0; i < svVerseDurations.length; i++) {
+      if (accumulated + svVerseDurations[i] > targetTime) {
+        svCurrentVerseIndex = i;
+        const audio = document.getElementById('svAudioPlayer');
+        
+        const verse = svVerses[i];
+        if (!audio.src.includes(svGetAudioUrl(verse).split('/').pop())) {
+          audio.src = svGetAudioUrl(verse);
+        }
+        audio.currentTime = targetTime - accumulated;
+        
+        if (svIsPlaying) audio.play();
+        
+        svUpdateTrackInfo();
+        svScrollToVerse(i);
+        return;
+      }
+      accumulated += svVerseDurations[i];
+    }
+  };
+
+  // Update highlighting
+  function svUpdateHighlighting(verseIndex, currentTime) {
+    document.querySelectorAll('.sv-verse-card').forEach((card, i) => {
+      card.classList.remove('playing', 'completed');
+      if (i < verseIndex) card.classList.add('completed');
+      else if (i === verseIndex) card.classList.add('playing');
+    });
+    
+    document.querySelectorAll('.sv-pada').forEach(el => {
+      el.classList.remove('active', 'past');
+    });
+    
+    if (verseIndex >= 0 && verseIndex < svVerses.length) {
+      const verse = svVerses[verseIndex];
+      verse.padas.forEach((pada, j) => {
+        const padaEl = document.querySelector(`.sv-pada[data-verse="${verseIndex}"][data-pada="${j}"]`);
+        if (!padaEl) return;
+        
+        if (currentTime >= pada.begin && currentTime < pada.end) {
+          padaEl.classList.add('active');
+        } else if (currentTime >= pada.end) {
+          padaEl.classList.add('past');
+        }
+      });
+    }
+  }
+
+  // Report timing issue
+  window.svReportIssue = function() {
+    const verse = svVerses[svCurrentVerseIndex];
+    const title = encodeURIComponent(`[Sync] Mandala ${verse.mandala} / Sukta ${verse.sukta} / Rik ${verse.rik} - Pada timing issue`);
+    const body = encodeURIComponent(`**Verse:** ${verse.id}
+**Mandala:** ${verse.mandala}
+**Sukta:** ${verse.sukta}
+**Rik:** ${verse.rik}
+
+**Issue Type:** Pada boundary misaligned
+
+**Description:** (Please describe the timing issue you noticed)
+
+---
+_Audio: ${svGetAudioUrl(verse)}_`);
+    
+    const url = `https://github.com/hvram1/rigveda.sanatana.in/issues/new?title=${title}&labels=sync-correction&body=${body}`;
+    window.open(url, '_blank');
+  };
+
+  // Audio event listeners
+  document.addEventListener('DOMContentLoaded', () => {
+    const audio = document.getElementById('svAudioPlayer');
+    if (!audio) return;
+    
+    audio.addEventListener('timeupdate', (e) => {
+      svUpdateHighlighting(svCurrentVerseIndex, e.target.currentTime);
+      svUpdateProgress(e.target.currentTime);
+    });
+    
+    audio.addEventListener('ended', () => {
+      if (svCurrentVerseIndex < svVerses.length - 1) {
+        svPlayFromVerse(svCurrentVerseIndex + 1);
+      } else {
+        svIsPlaying = false;
+        document.getElementById('svPlayPauseBtn').textContent = '▶';
+        document.querySelectorAll('.sv-verse-card').forEach(card => {
+          card.classList.remove('playing');
+          card.classList.add('completed');
+        });
+      }
+    });
+  });
+</script>
+
+<style is:global>
+  /* Trigger button */
+  .svaranugami-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1.25rem;
+    background: linear-gradient(135deg, var(--color-golden), var(--color-maroon));
+    color: white;
+    border: none;
+    border-radius: 2rem;
+    font-family: 'AdiShilaVedic', serif;
+    font-size: 1rem;
+    cursor: pointer;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+    transition: all 0.2s;
+  }
+
+  .svaranugami-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(0,0,0,0.25);
+  }
+
+  .btn-icon {
+    font-size: 1.25rem;
+  }
+
+  /* Overlay */
+  .overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .overlay.hidden {
+    display: none;
+  }
+
+  .overlay-backdrop {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.7);
+  }
+
+  .overlay-content {
+    position: relative;
+    width: 90%;
+    max-width: 800px;
+    max-height: 85vh;
+    background: #1a1a2e;
+    border-radius: 12px;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  .overlay-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1rem 1.5rem;
+    border-bottom: 1px solid rgba(229, 174, 71, 0.2);
+  }
+
+  .overlay-header h2 {
+    color: var(--color-golden);
+    font-family: 'AdiShilaVedic', serif;
+    font-size: 1.5rem;
+    margin: 0;
+  }
+
+  .close-btn {
+    width: 36px;
+    height: 36px;
+    background: transparent;
+    border: 1px solid rgba(229, 174, 71, 0.3);
+    color: var(--color-golden);
+    border-radius: 50%;
+    font-size: 1.25rem;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .close-btn:hover {
+    background: rgba(229, 174, 71, 0.2);
+  }
+
+  /* Player controls */
+  .player-controls {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem 1.5rem;
+    background: #2a2a4e;
+  }
+
+  .play-btn {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    background: var(--color-golden);
+    border: none;
+    color: #1a1a2e;
+    font-size: 1.25rem;
+    cursor: pointer;
+    flex-shrink: 0;
+  }
+
+  .play-btn:hover {
+    background: #f0c060;
+  }
+
+  .progress-container {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .progress-bar {
+    height: 6px;
+    background: #1a1a2e;
+    border-radius: 3px;
+    cursor: pointer;
+    overflow: hidden;
+  }
+
+  .progress-fill {
+    height: 100%;
+    background: var(--color-golden);
+    width: 0%;
+    transition: width 0.1s linear;
+  }
+
+  .progress-info {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.75rem;
+    color: #888;
+  }
+
+  .nav-btns {
+    display: flex;
+    gap: 0.5rem;
+  }
+
+  .nav-btn {
+    padding: 0.5rem;
+    background: transparent;
+    border: 1px solid rgba(229, 174, 71, 0.3);
+    color: var(--color-golden);
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 1rem;
+  }
+
+  .nav-btn:hover {
+    background: rgba(229, 174, 71, 0.2);
+  }
+
+  .track-info {
+    font-size: 0.875rem;
+    color: var(--color-golden);
+    min-width: 70px;
+    text-align: right;
+  }
+
+  /* Verse list */
+  .verse-list {
+    flex: 1;
+    overflow-y: auto;
+    padding: 1rem 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .sv-verse-card {
+    background: #2a2a4e;
+    border-radius: 8px;
+    padding: 1rem;
+    border-left: 4px solid transparent;
+    transition: all 0.2s;
+  }
+
+  .sv-verse-card.playing {
+    border-left-color: var(--color-golden);
+    background: #3a3a5e;
+  }
+
+  .sv-verse-card.completed {
+    opacity: 0.5;
+  }
+
+  .sv-verse-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.75rem;
+  }
+
+  .sv-verse-number {
+    font-size: 0.875rem;
+    color: #888;
+    background: #1a1a2e;
+    padding: 0.25rem 0.75rem;
+    border-radius: 1rem;
+  }
+
+  .sv-verse-card.playing .sv-verse-number {
+    background: var(--color-golden);
+    color: #1a1a2e;
+  }
+
+  .sv-verse-play-btn {
+    padding: 0.25rem 0.75rem;
+    background: transparent;
+    border: 1px solid var(--color-golden);
+    color: var(--color-golden);
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.875rem;
+  }
+
+  .sv-verse-play-btn:hover {
+    background: rgba(229, 174, 71, 0.2);
+  }
+
+  .sv-padas {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .sv-pada {
+    font-family: 'AdiShilaVedic', serif;
+    font-size: 1.25rem;
+    line-height: 1.6;
+    color: var(--color-golden);
+    padding: 0.75rem 1rem;
+    border-radius: 4px;
+    background: rgba(26, 26, 46, 0.5);
+    transition: all 0.2s;
+  }
+
+  .sv-pada.active {
+    background: rgba(229, 174, 71, 0.25);
+    border-left: 3px solid var(--color-golden);
+  }
+
+  .sv-pada.past {
+    opacity: 0.5;
+  }
+
+  /* Report section */
+  .report-section {
+    padding: 1rem 1.5rem;
+    border-top: 1px solid rgba(229, 174, 71, 0.2);
+    text-align: center;
+  }
+
+  .report-btn {
+    padding: 0.5rem 1rem;
+    background: transparent;
+    border: 1px solid rgba(255, 193, 7, 0.5);
+    color: #ffc107;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.875rem;
+    transition: all 0.2s;
+  }
+
+  .report-btn:hover {
+    background: rgba(255, 193, 7, 0.1);
+  }
+
+  /* Mobile */
+  @media (max-width: 768px) {
+    .overlay-content {
+      width: 100%;
+      height: 100%;
+      max-height: 100%;
+      border-radius: 0;
+    }
+
+    .player-controls {
+      flex-wrap: wrap;
+      gap: 0.75rem;
+    }
+
+    .progress-container {
+      order: 3;
+      width: 100%;
+    }
+
+    .track-info {
+      order: 2;
+    }
+
+    .sv-pada {
+      font-size: 1.1rem;
+    }
+
+    .svaranugami-btn {
+      padding: 0.6rem 1rem;
+      font-size: 0.9rem;
+    }
+  }
+</style>
